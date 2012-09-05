@@ -15,7 +15,7 @@ p2=Population(fitfunc,2*psize,searchspace)
 
 p1.new_random_genes()
 p1.eval_all()
-[print dude.score for dude in p1]
+print [dude.score for dude in p1]
 dude1,dude2=p1[:2]           # now we can address these two guys individually
 print dude1<dude2            # wanting to implicitly compare dude1.score with dude2.score
 print dude1.isbetter(dude2)  # dudes should know whether goal is to minimise or maximise score
@@ -63,7 +63,7 @@ print p1[0] is bestdude   # ... that's how to ask that question
 
 p3.pickle_self(path)      # being able to pickle and unpickle populations definitely makes sense
 ~~~~~
-We want to be able to pull out important data in the form of numpy arrays:
+We want to be able to pull out important data in the form of lists or arrays:
 ~~~~~~ python
 finalDNAs=p4.get_DNAs()
 finalscores=p4.get_scores()
@@ -87,8 +87,9 @@ purpose of this project
 -----------------------
 class library for rapid prototyping of evolutionary optimisers
  - focus on real parameter optimisation
- - easy test function implementation
- - implementing solution candidate plotting easy
+ - flexibility implementing complex optimisation problems (by subclassing `Individual`)
+ - implementing solution candidate plotting is easy (adding plot routine to Individual subclass)
+
 The goal is a rapid iteration cycle for the experimenting architect of evolutionary algorithms.
 
 
@@ -102,8 +103,14 @@ current features
    * `p.sort()` sorts according to score/fitness of Individuals
    * `p.sort_for('anything')` sorts for that if individuals have a property `dude.anything`
  - mutation and recombination operators are able to respect search domain boundaries
+ - a little tutorial
+
+#### tutorial lessons
  - tutorial lesson 1: simple evolution strategy, a (mu,lambda)-ES
  - tutorial lesson 2: simple genetic algorithm (GA) with roulette wheel parent selection
+ - tutorial lesson 3a: comparison operators of the Individual class
+ - tutorial lesson 3b: old-school crossing-over operators for individual's DNAs
+ - tutorial lesson 3c: mutation operators - plot DNA vector density distributions
 
 
 features to be added soon
