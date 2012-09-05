@@ -3,8 +3,10 @@ peabox
 
 an evolutionary algorithm toolbox written in python
 
+Use it if you want to tinker around with evolutionary algorithms and you do not yet know wheter it will take you into the direction of GA, ES, PSO, DE, simulated annealing etc or if you decline that decision at all.
+
 motivation
-==========
+----------
 Learning by doing is the only way to familiarise oneself with evolutionary algorithms. Hence, the interest in rapid algorithm prototyping.
 So, wouldn't it be nice to be able to hack away like this?
 ~~~~~~ python
@@ -24,23 +26,23 @@ p2[0].copy_DNA_of(p1[0])     # conserve best
 for dude in p2[1:]:
     if in_the_mood_for_CO():
         parentA,parentB=randint(psize,size=2)
-        dude.CO_from(p1[parentA],p1[parentB])
+        dude.CO_from(p1[parentA],p1[parentB])  # uniform crossing-over
     elif in_the_mood_for_mutation():
         dude.copy_DNA_of(p1[randint(psize)])
-        dude.mutate(P,standarddeviation)
+        dude.mutate(P,standarddeviation)       # adding a vector of normally distributed numbers as one mutation option
     elif in_the_mood_for_averaging():
         parentA,parentB=randint(psize,size=2)
-        dude.become_mixture_of(p1[parentA],p1[parentB])
+        dude.become_mixture_of(p1[parentA],p1[parentB])   # center of connecting line, i.e. mean DNA vector
     elif in_the_mood_for_DE():
         pA,pB,pC=find_three_DE_parents(p1)
-        dude.become_DE_child(pA,pB,pC)
+        dude.become_DE_child(pA,pB,pC)         # differential evolution step
     else:
-        dude.whatever()
+        dude.whatever()   # easily invent a new dude.method() based on basal Individual's methods
 
 p2.eval_all()
 p2.sort()
 ~~~~~
-Often it makes sense to work with test problems of which you can easily visualise a solution candidate (e.g. 2D truss bridge or FM-synthesis wave matching), which will allow you to quickly judge online whether the best solution found in a population improves over time or not.
+Often it makes sense to work with test problems of which you can easily visualise a solution candidate (e.g. 2D truss bridge or FM-synthesis wave matching), which will allow you to quickly judge online whether the best solution found in a population improves over time or not. In that case I'd like to have the possibility of subclassing the `Individual` and add a specific `plot_yourself()` function.
 ~~~~~~ python
 bestdude=p2[0]
 bestdude.plot_yourself(path) 
@@ -60,10 +62,13 @@ print p1[0] is p2[0]      # and did it stay the best in p2? no, hold on, p2 is n
 print p1[0] is bestdude   # ... that's how to ask that question
 
 p3.pickle_self(path)      # being able to pickle and unpickle populations definitely makes sense
-
-
+~~~~~
+We want to be able to pull out important data in the form of numpy arrays:
+~~~~~~ python
 finalDNAs=p4.get_DNAs()
 finalscores=p4.get_scores()
+bestDNA=bestdude.get_copy_of_DNA()
+bestDNApointer=bestdude.DNA
 ~~~~~
 And after a couple of generations, maybe you want to plot something like this:
 ~~~~~~ python
@@ -73,15 +78,32 @@ p1.plot_best_DNA_development(plotpath)
 
 
 
-Well, my answer was yes, it definitely would be nice to have such shortcut methods, so I coded up two classes for `Individual` and `Population` and some test function and plotting routines. I really think it made experimenting with evolutionary algorithms much easier for me.
+Well, my answer was yes, it definitely would be nice to have such shortcut methods, so I coded up two classes for `Individual` and `Population` and some test function and plotting routines. I really think it made experimenting with evolutionary algorithms much easier and faster for me.
 
 In order to share the library with you on github, these days I am stripping the code of parts too specific to my application, hoping to get rid of everything potentially annoying and conserving the core utilities of general interest.
+
+
+purpose of this project
+-----------------------
+class library for rapid prototyping of evolutionary optimisers
+ - focus on real parameter optimisation
+ - easy test function implementation
+ - implementing solution candidate plotting easy
+The goal is a rapid iteration cycle for the experimenting architect of evolutionary algorithms.
 
 
 current features
 ----------------
  - Individual class with operators for dealing with own and fellow DNA (i.e. copying, mutating, crossover like uniform, BLX, WHX ...)
  - Population class with functionality for sorting, merging, slicing, pulling array data (and threaded evaluation on a low level)
+ - populations behave like a python list, so you can append and slice them
+ - individuals have comparison operators
+ - hence, a population `p` can easily be sorted:
+   * `p.sort()` sorts according to score/fitness of Individuals
+   * `p.sort_for('anything')` sorts for that if individuals have a property `dude.anything`
+ - mutation and recombination operators are able to respect search domain boundaries
+ - tutorial lesson 1: simple evolution strategy, a (mu,lambda)-ES
+ - tutorial lesson 2: simple genetic algorithm (GA) with roulette wheel parent selection
 
 
 features to be added soon
@@ -90,6 +112,20 @@ features to be added soon
  - popular EAs as class definition: evolution strategy (ES), genetic algorithm (GA), differential evolution (DE), scatter search (SCS or SS)
  - a recorder class for regularly taking notes on population status
  - utilities for plotting population histories based on data from recorder objects
+ - local search: greedy, ES, Nelder-Mead
+
+
+keywords
+--------
+evolutionary algorithm, evolutionary computation, evolutionary optimisation, global search, derivative-less optimisation
+
+
+not featured
+------------
+ - binary DNA
+ - operators (mutation, CO) for integer-coded DNA
+ - DNA of symbols
+ - DNA of variable length within one population
 
 
 
