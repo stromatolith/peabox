@@ -89,3 +89,19 @@ features to be added soon
  - popular EAs as class definition: evolution strategy (ES), genetic algorithm (GA), differential evolution (DE), scatter search (SCS or SS)
  - a recorder class for regularly taking notes on population status
  - utilities for plotting population histories based on data from recorder objects
+
+
+
+finally, just testing how to get python syntax highlighting in this readme file
+-------------------------------------------------------------------------------
+~~~~~~ python
+from pylab import *
+a=randint(100,size=12).reshape(3,4)
+b=3.3
+c=max(b,1e4)
+d=np.max(a,axis=0)
+print 'Hallo Welt!'
+print 'max is {}'.format(c)
+for i in range(3):
+    a+=1
+~~~~~
