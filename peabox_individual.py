@@ -12,6 +12,10 @@ from numpy import sqrt, pi, arctan, mean, mod, ceil
 from numpy import arange, array, ones, zeros, where, argsort
 from numpy.random import rand, randn, randint
 
+#--- ToDo:
+# BGA mutation operator
+# dude.become_DE_child(pa,pb,pc)
+
 #-----------------------------------------------------------------------------------------------------------------------------
 #           Die Klasse "individual"
 #-----------------------------------------------------------------------------------------------------------------------------
@@ -171,6 +175,8 @@ class Individual:
         else:
             self.DNA+=distrib()
         if mirrorbds: self.mirror_DNA_into_bounds()
+    #def BGA_mutation(self):
+    #    still has to be implemented
         
 
     #----- enforcing domain boundaries when mutations kick individuals outside the designated search space ------------------------

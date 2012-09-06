@@ -111,4 +111,10 @@ for dim,dat in zip([2,3,5],[plotdat2D,plotdat3D,plotdat5D]):
     plt.close()
     
 print "now try for yourself:"
-print "other mutation operators implemented in the Individual class"
+print 'a) dude.DNA+= scaling_vector * randn(dim)'
+print '   then dude.cycle_DNA_into_bounds()    or    dude.mirror_DNA_into_bounds()'
+print 'b) dude.mutate(P,sd=sd,uCS=True)   with probability P and standard deviation sd'
+print '   check out effect of uCS = True/False'
+print '   uCS is short for unit cube coordinate system'
+print '   if uCS=True then the whole search space is projected (linear stretching and compressing) onto a unit cube when the mutation takes place'
+print "c) other mutation operators implemented in the Individual class"

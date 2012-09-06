@@ -63,6 +63,10 @@ import matplotlib.pyplot as plt
 from peabox_individual import Individual
 from peabox_population import Population
 
+#-------------------------------------------------------------------------------
+#--- part 1: Ingredients -------------------------------------------------------
+#-------------------------------------------------------------------------------
+
 def rastrigin(x):
     x = asfarray(x)
     n=len(x); A=10.
@@ -101,19 +105,35 @@ G=41     # number of generations to go through
 dim=len(searchspace)
 parents=Population(Individual,ps,rastrigin,searchspace)
 offspring=Population(Individual,ps,rastrigin,searchspace)
+rw=RouletteWheel(dim)
+
+
+#-------------------------------------------------------------------------------
+#--- part 2: random starting point for search ----------------------------------
+#--- and more initialisation ---------------------------------------------------
+#-------------------------------------------------------------------------------
+
 npr.seed(3) # seed differently or comment out if you want to see an algorithm's average performance over several runs
 parents.new_random_genes()
 parents.eval_all()
 parents.sort()
 print 'initial population:\nbest score = ',parents[0].score
-rw=RouletteWheel(dim)
 
-# change the plot interval to a low value, e.g. 1, if you want to see what is explained above
-ginter=G/5  # interval to take a snapshot of best solution
+# change the plot interval to a low value, e.g. 1, if you want to see
+# the different characters of change patterns of the current best solution
+#ginter=G/5  # interval to take a snapshot of best solution (for plot variant 2)
+ginter=1  # interval to take a snapshot of best solution (for plot variants 1 and 3)
 glist=[]; bestDNAs=[]; bestscores=[]
 
+
+#-------------------------------------------------------------------------------
+#--- part 3: the GA generational loop ------------------------------------------
+#--- step 1: generate offspring via CO-operator --------------------------------
+#--- step 2: mutate offspring with rather small probability --------------------
+#-------------------------------------------------------------------------------
+
 for g in range(G):
-    rw.initialize_thresholds(parents)
+    rw.initialize_thresholds(parents) # adjusting parent choice probabilities to current fitness distribution
     for dude in offspring:
         pa,pb=rw.choose_parents()
         dude.CO_from(parents[pa],parents[pb])
@@ -129,51 +149,109 @@ for g in range(G):
 print 'final population:\nbest score = ',parents[0].score
 
 
-#--- making a plot -------------------------------------------------------------
-save_DNA_snapshot_plots=True
+#-------------------------------------------------------------------------------
+#--- part 4: making plots showing development of best solution -----------------
+#--- variant 1: gallery to click through ---------------------------------------
+#---            use small ginter -----------------------------------------------
+#--- variant 2: a couple intermediate steps in one image -----------------------
+#---            use larger ginter ----------------------------------------------
+#--- variant 3: temporal development of best DNA plotted from left to right ----
+#---            use small ginter -----------------------------------------------
+#-------------------------------------------------------------------------------
+
+plot_variant=3
+
 rastx=linspace(-5,5,200)
 rasty=[rastrigin([x]) for x in rastx]
 rasty=array(rasty)
 rasty=0.5*dim*rasty/np.max(rasty)
 
-if save_DNA_snapshot_plots:
+txt2='The unrotated Rastrigin function is a separable problem, that means'
+txt2+="\nshifting one gene doesn't worsen (influence at all) the other gene's"
+txt2+="\ncontributions. That means we have 8 independent problems, which is a too"
+txt2+="\neasy thing. Judging an EA's performance we have to move to nastier stuff."
+
+if plot_variant==1:
+    
     for j,g in enumerate(glist):
+        fig=plt.figure(figsize=(12,9))
+        ax=fig.add_subplot(111)
         for i in range(dim):
             ypos=i+1
-            plt.axhspan(ypos-0.2,ypos+0.2,color='b',alpha=0.2)
-        plt.plot(rastx,rasty,'k-',alpha=0.4)
-        plt.scatter(bestDNAs[j],arange(dim)+1,s=40,c='r')
-        plt.xlim(-5,5)
-        plt.ylim(0,dim+0.5)
-        plt.xlabel('search space coordinate')
-        plt.ylabel('gene number (i.e. DNA vector index)')
+            ax.axhspan(ypos-0.2,ypos+0.2,color='b',alpha=0.2)
+        ax.plot(rastx,rasty,'k-',alpha=0.4)
+        ax.scatter(bestDNAs[j],arange(dim)+1,s=40,c='r')
+        ax.set_xlim(-5,5)
+        ax.set_ylim(0,dim+0.5)
+        ax.set_xlabel('search space coordinate')
+        ax.set_ylabel('gene number (i.e. DNA vector index)')
         txt='temporal development of best solution DNA'
         txt+='\nsnapshot of generation '+str(g)
         plt.suptitle(txt,x=0.5,y=0.98,ha='center',va='top')
+        plt.suptitle(txt2,x=0.02,y=0.01,ha='left',va='bottom',fontsize=8)
         plt.savefig('RCGA_snapshot_generation_{}.png'.format(str(g).zfill(3)))
         plt.close()
 
-for i in range(dim):
-    ypos=i+1
-    plt.axhspan(ypos-0.2,ypos+0.2,color='b',alpha=0.2)
-plt.plot(rastx,rasty,'k-',alpha=0.4)
-mycolors=[mpl.cm.hot(x) for x in linspace(0,0.75,len(glist))]
-offset=linspace(-0.15,0.15,len(glist))
-for i,g in enumerate(glist):
-    plt.scatter(bestDNAs[i],arange(dim)+1+offset[i],s=40,c=mycolors[i])
-plt.xlim(-5,5)
-plt.ylim(0,dim+0.5)
-plt.xlabel('search space coordinate')
-plt.ylabel('gene number (i.e. DNA vector index)')
-txt='temporal development of best solution DNA'
-txt+='\nblack is old, yellow is new'
-plt.suptitle(txt,x=0.5,y=0.98,ha='center',va='top')
-plt.show()
+elif plot_variant==2:
+    
+    fig=plt.figure(figsize=(12,9))
+    ax=fig.add_subplot(111)
+    for i in range(dim):
+        ypos=i+1
+        ax.axhspan(ypos-0.2,ypos+0.2,color='b',alpha=0.2)
+    ax.plot(rastx,rasty,'k-',alpha=0.4)
+    mycolors=[mpl.cm.hot(x) for x in linspace(0,0.75,len(glist))]
+    offset=linspace(-0.15,0.15,len(glist))
+    for i,g in enumerate(glist):
+        ax.scatter(bestDNAs[i],arange(dim)+1+offset[i],s=40,c=mycolors[i])
+    ax.set_xlim(-5,5)
+    ax.set_ylim(0,dim+0.5)
+    ax.set_xlabel('search space coordinate')
+    ax.set_ylabel('gene number (i.e. DNA vector index)')
+    txt='temporal development of best solution DNA'
+    txt+='\nblack is old, yellow is new'
+    plt.suptitle(txt,x=0.5,y=0.98,ha='center',va='top')
+    plt.suptitle(txt2,x=0.02,y=0.01,ha='left',va='bottom',fontsize=8.5)
+    plt.show()  # pump the figure window up to fullscreen to be able to properly read everything
+
+elif plot_variant==3:
+
+    # creating figure
+    fig=plt.figure(figsize=(12,9))
+    ax=fig.add_subplot(111)
+    
+    #setting up background
+    bgnx,bgny=2,200
+    bgx=linspace(-1,glist[-1]*1.+1,bgnx+1)
+    bgy=linspace(parents[0].lls[0],parents[0].uls[0],bgny+1)  # equivalent: bgy=linspace(-5,5,101) ... unless searchspace above has been changed
+    bgcolumn=[rastrigin([x]) for x in linspace(parents[0].lls[0],parents[0].uls[0],bgny)]
+    bgdat=zeros((bgnx,bgny))
+    for i in range(bgnx): bgdat[i,:]=bgcolumn
+    bgdat/(2*np.max(bgdat))
+    ax.pcolor(bgx,bgy,bgdat.T,cmap=plt.cm.bone)  #,alpha=0.6)
+    
+    bestDNAs=array(bestDNAs)
+    mycolors=[mpl.cm.hsv(i/float(dim-1)) for i in range(dim)]
+    for i in range(dim):
+        ax.plot(glist,bestDNAs[:,i],ls='-',lw=2,color=mycolors[i],alpha=0.6)
+        ax.scatter(glist,bestDNAs[:,i],s=50-3*i,facecolor=mycolors[i],edgecolor=mycolors[i])
+    ax.set_xlim(-1,glist[-1]+1)
+    ax.set_ylim(parents[0].lls[0],parents[0].uls[0])
+    ax.set_xlabel('generation')
+    ax.set_ylabel('search space coordinate')
+    txt='temporal development of best solution DNA (turn to low ginter for this plot)'
+    txt+='\neach gene independently is pressured into a low point in a valley'
+    txt+='\nGA should let genes jump independently, whereas ES should make pattern move often but incrementally'
+    plt.suptitle(txt,x=0.5,y=0.98,ha='center',va='top')
+    plt.suptitle(txt2,x=0.02,y=0.01,ha='left',va='bottom',fontsize=8.5)
+    plt.show()
 
 
-
-#--- if you want to qualitatively check that the Roulette wheel implementation
-#--- makes sense, then use the part below
+#-------------------------------------------------------------------------------
+#--- Appendix --------------------------------------- --------------------------
+#--- if you want to qualitatively check that the Roulette wheel implementation -
+#--- makes sense, then use the part below --------------------------------------
+#-------------------------------------------------------------------------------
 """
 ps=5    # population size
 dim=len(searchspace)

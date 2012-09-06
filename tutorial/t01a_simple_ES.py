@@ -20,6 +20,11 @@ import matplotlib.pyplot as plt
 from peabox_individual import Individual
 from peabox_population import Population
 
+
+#-------------------------------------------------------------------------------
+#--- part 1: Ingredients -------------------------------------------------------
+#-------------------------------------------------------------------------------
+
 def parabolic(x):
     return np.sum(x*x)
 
@@ -38,17 +43,31 @@ dim=len(searchspace)
 parents=Population(Individual,mu,parabolic,searchspace)
 offspring=Population(Individual,la,parabolic,searchspace)
 
+
+#-------------------------------------------------------------------------------
+#--- part 2: random starting point for search ----------------------------------
+#--- and more initialisation ---------------------------------------------------
+#-------------------------------------------------------------------------------
+
 npr.seed(1)  # seeding numpy's random number generator so we get reproducibly the same random numbers
-startpoint=2*npr.rand(dim)-1
+startpoint=2*npr.rand(dim)-1     # point in search space where initial population is placed
 parents.set_every_DNA(startpoint)
 parents.eval_all()
 print 'fitness of initial population: '
+print [dude.score for dude in parents]
+print 'or also via get_scores():'
 print parents.get_scores()
+
 mstep=0.002   # mutation step size parameter
 print 'initial mstep: ',mstep, 2*'\n'
 g_rec=[]  # for recording x-data for plot, i.e. generation
 s_rec=[]  # for recording y-data for plot, i.e. score or fitness
 ms_rec=[]  # for recording mutation step size history 
+
+
+#-------------------------------------------------------------------------------
+#--- part 3: the loop for (mu,la)-ES -------------------------------------------
+#-------------------------------------------------------------------------------
 
 for g in range(50):    # generation loop
     parents.sort()
@@ -78,7 +97,12 @@ print 'final mstep: ',mstep, 2*'\n'
 
 
 
-#--- making a plot -------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#--- part 4: making a plot showing ---------------------------------------------
+#--- a) fitness over time and --------------------------------------------------
+#--- b) step size over time ----------------------------------------------------
+#-------------------------------------------------------------------------------
+
 N=len(s_rec)
 g_rec=np.array(g_rec)-0.4+0.8*npr.rand(N)
 l1=plt.plot(g_rec,s_rec,'bo',label='fitness')
