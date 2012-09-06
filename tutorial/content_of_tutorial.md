@@ -28,8 +28,9 @@ secondary goals:
 - lesson 3b: recombining DNAs
 - lesson 3c: mutation operators
    * plot DNA vector distributions after mutation
-   * compare searchspaces: 2D, 3D, and 5D
-   * mutation: (a) fixed length step in random direction, (b) normally distributed numbers
+   * compare searchspace dimensionalities: 2D, 3D, and 5D
+   * mutation: (a) fixed length step in random direction
+   * mutation: (b) adding normally distributed numbers: ` + scaling_vector * randn(dim)`
    * treating mutation steps transgressing the search domain boundary
 
 
