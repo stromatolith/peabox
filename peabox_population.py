@@ -106,6 +106,7 @@ class Population:
     def __init__(self,species,popsize,objfunc,paramspace):
         ngenes=len(paramspace)
         self.pars=tuple(paramspace)
+        self.parnames=tuple([el[0] for el in self.pars])
         self.species=species # should be the class Individual or a subclass
         self.objfunc=objfunc
         self.objname=str(self.objfunc).split()[1]
@@ -218,6 +219,17 @@ class Population:
     def sort_for(self,attributename):
         """The argument for this function can be any string that matches a valid Individual attribute of scalar value"""
         values=[eval('dude.'+attributename) for dude in self.folks]
+        self.folks=[self.folks[i] for i in np.argsort(values)]
+
+    def sort_for_DNApar(self,parametername):
+        """The argument for this function can be any string that matches one of the parameter names or its index in self.parnames"""
+        if type(parametername) is str:
+            idx=self.parnames.index(parametername)
+        elif type(parametername) is int:
+            idx=parametername
+        else:
+            raise TypeError('argument of self.sort_for_DNApar() must be of type str or int')
+        values=[eval('dude.DNA['+str(idx)+']') for dude in self.folks]
         self.folks=[self.folks[i] for i in np.argsort(values)]
 
     def reverse(self):

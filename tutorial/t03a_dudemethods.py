@@ -34,14 +34,14 @@ from peabox_population import Population
 def parabolic(x):
     return np.sum(x*x)
 
-searchspace=(('p1',-1.,+1.),
-             ('p2',-1.,+1.),
-             ('p3',-1.,+1.))
+searchspace=(('length',12.,14.),
+             ('wall_thickness',0.1,1.4),
+             ('radius',20.,40.))
 
 N=5
 p=Population(Individual,N,parabolic,searchspace)
 
-npr.seed(1)
+npr.seed(3)
 p.new_random_genes()
 p.eval_all()
 
@@ -54,7 +54,7 @@ print 'dude0<dude1 yields ',dude0<dude1,'    and dude0.isbetter(dude1) yields ',
 print 'dude0<dude2 yields ',dude0<dude2,'    and dude0.isbetter(dude2) yields ',dude0.isbetter(dude2)
 print 'p.whatisfit and dude0.whatisfit are: ',p.whatisfit,dude0.whatisfit
 p.determine_whatisfit('max')
-print "now how does i look like after the spell 'p.determine_whatisfit('min')'?"
+print "now how does it look like after the spell 'p.determine_whatisfit('max')'?"
 print 'p.whatisfit and dude0.whatisfit are: ',p.whatisfit,dude0.whatisfit
 print 'and the comparisons from above?'
 print 'dude0<dude1 yields ',dude0<dude1,'    and dude0.isbetter(dude1) yields ',dude0.isbetter(dude1)
@@ -78,14 +78,24 @@ print "now let's update the numbering so it corresponds to the current sequence"
 p.update_no()
 print 'dude.no: ',[dude.no for dude in p]
 print 'dude.oldno: ',[dude.oldno for dude in p]
-print 'and hence the direct printout: ',p,'   which is the output of "Population.__str__()"'
+print 'new look of the direct printout: ',p,'   which is the output of "Population.__str__()"'
 print 2*'\n'
 
-print "now let's sort the population according to the first entry of the DNA vector"
+print "now let's sort the population according to the first entry of the DNA vector saying p.sort_for('DNA[0]')"
 p.sort_for('DNA[0]')  # you can sort_for(somestring) as long as eval('dude.'+somestring) makes some sense
+print "you can sort_for(somestring) as long as eval('dude.'+somestring) makes some sense"
 print 'dude.no: ',[dude.no for dude in p]
 print 'dude.oldno: ',[dude.oldno for dude in p]
 print 'dude.DNA[0]: ',[dude.DNA[0] for dude in p]
+print "or let's change opinion and sort for the second DNA vector entry, the wall thickness"
+print "there is a sorting routine accepting the DNA parameter name: p.sort_for_DNApar('wall_thickness')"
+p.sort_for_DNApar('wall_thickness')
+print 'dude.no: ',[dude.no for dude in p]
+print 'dude.oldno: ',[dude.oldno for dude in p]
+print 'dude.DNA[1]: ',[dude.DNA[1] for dude in p]
+print 2*'\n'
+
+print "now back to the potential usefulness of the individual's property oldno"
 print 'the update function for "oldno" gives you the choice of doing it either according to the current ranking'
 p.mark_oldno()
 print 'after p.mark_oldno()'
@@ -98,8 +108,8 @@ print '\n'
 print 'now if we update "no" again, it all means what it says'
 p.update_no()
 print 'dude.no: ',[dude.no for dude in p],'   <-- reflects current status'
-print 'dude.oldno: ',[dude.oldno for dude in p],'   <-- reflects status before we started messing by sorting for DNA[0]'
-print 'dude.DNA[0]: ',[dude.DNA[0] for dude in p],'   <-- reason for current sorting status'
+print 'dude.oldno: ',[dude.oldno for dude in p],'   <-- reflects status before we started messing by sorting for DNA[0] and then DNA[1]'
+print 'dude.DNA[1]: ',[dude.DNA[1] for dude in p],'   <-- reason for current sorting status'
 print 2*'\n'
 
 print "Well, that's all a lot of fanciness that might stay unused in many cases,"
