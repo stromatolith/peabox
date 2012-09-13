@@ -240,8 +240,8 @@ def ancestryplot(rec,ginter=None,path=None,title=None,addtext=None,textbox=None,
         tbx.set_bbox(dict(facecolor='gray', alpha=0.25))
     if path is None: path=rec.p.plotpath
     if picname is None:
-        if ginter is None: picname='ancestryplot_c'+str(p.ncase)+'_sc'+str(p.subcase).zfill(3)+'_g'+str(p.gg)
-        else: picname='ancestryplot_c'+str(p.ncase)+'_sc'+str(p.subcase).zfill(3)+'_g'+str(gini)+'to'+str(gend)
+        if ginter is None: picname='ancestryplot_'+p.label
+        else: picname='ancestryplot_c'+str(p.ncase).zfill(3)+'_sc'+str(p.subcase).zfill(3)+'_g'+str(gini)+'to'+str(gend)
     plt.savefig(join(path,picname+suffix+'.png'))
     plt.close()
     
@@ -424,6 +424,7 @@ def varying_weight_orderplots(p,wkey,xvals):
 
 
 def fmsynthplot(problem,individual,pathname=None,title=None,addtext=None,ylimits=None):
+    """plot one solution to the CEC-2011 problem no. 1, the FM-synthesis wave fitting problem"""
     DNA=individual.get_copy_of_DNA(); #a=[DNA[0],DNA[2],DNA[4]]; w=[DNA[1],DNA[3],DNA[5]]
     problem.call(DNA); t=problem.t; tgt=problem.target; wave=problem.trial
     plt.fill_between(t,tgt,wave)

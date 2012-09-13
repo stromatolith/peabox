@@ -36,6 +36,8 @@ secondary goals:
 ### lesson 4: my first EA homebrew: throwing simulated annealing and GA together
 - lesson 4a: a first algorithmic sketch
 - lesson 4b: plotting population score distribution over time - introducing the recorder
+- lesson 4c: more visualisation
+- lesson 4d: efficient EA fine tuning - yes, but after decluttering our head and program (via outside definitions / OOP)
 
 
 

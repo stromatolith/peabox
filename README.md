@@ -134,6 +134,7 @@ not featured
  - operators (mutation, CO) for integer-coded DNA
  - DNA of symbols
  - DNA of variable length within one population
+ - program installation --> just copy the files you need into your work folder (sorry, I didn't take the time yet to figure out how to use distutils or other such stuff)
 
 
 

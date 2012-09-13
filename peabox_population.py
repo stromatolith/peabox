@@ -371,7 +371,7 @@ class Population:
                 
     def reset_individual_attributes(self):
         for i,dude in enumerate(self):
-            dude.oldno=i; dude.ancestcode=1.; dude.pa=-1; dude.pb=-1; dude.score=0.
+            dude.oldno=i; dude.ancestcode=1.; dude.pa=-1; dude.pb=-1; dude.score=0.; dude.gg=self.gg
             
     def reset_all_mutagenes(self,value=1.):
         for dude in self:
@@ -452,6 +452,8 @@ class Population:
 
     def reset(self):
         self.gg=0
+        self.reset_individual_attributes()
+        self.update_label()
         self.neval=0
         self.goal['fulfilltime']=-1; self.goal['fulfillcalls']=-1
             
