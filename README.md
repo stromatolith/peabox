@@ -105,6 +105,7 @@ current features
  - mutation and recombination operators are able to respect search domain boundaries
  - some CEC-2005 test functions and some other popular test functions
  - a recorder class for regularly taking notes on population status
+ - utilities for plotting population histories based on data from recorder objects
  - a little tutorial
 
 #### tutorial lessons
@@ -119,7 +120,6 @@ current features
 features to be added soon
 -------------------------
  - popular EAs as class definition: evolution strategy (ES), genetic algorithm (GA), differential evolution (DE), scatter search (SCS or SS)
- - utilities for plotting population histories based on data from recorder objects
  - local search: greedy, ES, Nelder-Mead
 
 
