@@ -33,6 +33,9 @@ secondary goals:
    * mutation: (b) adding normally distributed numbers: ` + scaling_vector * randn(dim)`
    * treating mutation steps transgressing the search domain boundary
 
+### lesson 4: my first EA homebrew: throwing simulated annealing and GA together
+- lesson 4a: a first algorithmic sketch
+- lesson 4b: plotting population score distribution over time - introducing the recorder
 
 
 

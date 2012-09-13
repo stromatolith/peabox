@@ -113,6 +113,7 @@ current features
  - tutorial lesson 3a: comparison operators of the Individual class
  - tutorial lesson 3b: old-school crossing-over operators for individual's DNAs
  - tutorial lesson 3c: mutation operators - plot DNA vector density distributions
+ - tutorial lesson 4: an EA homebrew - stages of exploring a new EA concept
 
 
 features to be added soon
