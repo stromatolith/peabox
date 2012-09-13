@@ -13,6 +13,7 @@ from os.path import join
 from cPickle import Pickler
 from copy import copy
 from threading import Thread, Lock
+from time import time, localtime
 
 import numpy as np
 import numpy.random as npr
@@ -22,7 +23,6 @@ from scipy.stats import pearsonr
 
 #-----------------------------------------------------------------------------------------------------------------------------
 from peabox_individual import Individual  #, MOIndividual
-from peabox_helpers import determine_best_thread_amount
 #-----------------------------------------------------------------------------------------------------------------------------
 
 def population_like(otherpop,size=0):
@@ -966,10 +966,27 @@ class single_eval_thread(Thread):
         self.tlock=schloss
         Thread.__init__(self)
     def run(self):
-        #print 'starting eval_score() on dude ',self.dude.no
+        #print 'starting evaluate() on dude ',self.dude.no
         self.dude.evaluate(tlock=self.tlock)
 
 
+def determine_best_thread_amount(low_n=None, desired_n=None, daytime=[6,21], workdays=[0,5]):
+    """
+    This is just one possible implementation which had been suitable for my application
+    where it was okay to use two licences on weekdays and 8 at nicght and over the weekend.
+    For you it might look completely different, it might get so simple as to return just a constant.
+    So why not erase the function? Simply because it is used in two places, eval_all_threaded() and
+    eval_bunch_threaded(), and one easily forgets to modify the other one too after having changed one of them.
+    """
+    if low_n is None: low_n=2
+    if desired_n is None: desired_n=8
+    tm=localtime(time())
+    n=low_n
+    if (tm[6] in range(6,21)) and (tm[3] in range(0,5)):
+        n=low_n
+    else:
+        n=desired_n
+    return n
 
 
 

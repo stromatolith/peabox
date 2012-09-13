@@ -17,7 +17,7 @@ from numpy.random import rand, randn, randint
 # dude.become_DE_child(pa,pb,pc)
 
 #-----------------------------------------------------------------------------------------------------------------------------
-#           Die Klasse "individual"
+#--- The class "Individual" for real-coded single-objective optimisation
 #-----------------------------------------------------------------------------------------------------------------------------
 class Individual:
     def __init__(self,objfunc,paramspace):
