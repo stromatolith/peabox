@@ -103,6 +103,8 @@ current features
    * `p.sort()` sorts according to score/fitness of Individuals
    * `p.sort_for('anything')` sorts for that if individuals have a property `dude.anything`
  - mutation and recombination operators are able to respect search domain boundaries
+ - some CEC-2005 test functions and some other popular test functions
+ - a recorder class for regularly taking notes on population status
  - a little tutorial
 
 #### tutorial lessons
@@ -115,9 +117,7 @@ current features
 
 features to be added soon
 -------------------------
- - some CEC-2005 test functions and some other popular test functions
  - popular EAs as class definition: evolution strategy (ES), genetic algorithm (GA), differential evolution (DE), scatter search (SCS or SS)
- - a recorder class for regularly taking notes on population status
  - utilities for plotting population histories based on data from recorder objects
  - local search: greedy, ES, Nelder-Mead
 
