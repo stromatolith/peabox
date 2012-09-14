@@ -73,6 +73,17 @@ for i,r in enumerate([0.2,0.5,0.8]):
     ancestryplot(rec,whiggle=0.6,ylimits=[90,120],addtext=txt)
     plot_improvement_rates(rec)
 
+# ea.saga_ratio=0.5 seems to be the best setting.
+# That at this point 100% GA will not work is quite clear, remember, there is
+# no mutation operator in the GA offspring production so you would ever just
+# recombine the old same snippets of DNA.
+# But this leads us to the thought that it might be inefficient to cling to this
+# 50%-50% separation between SA and GA with no overlap. Maybe it will be better
+# to try some overlap and apply some sort of mutation (not necessarily with same
+# intensity) and maybe even the SA energy criterion to the GA offspring. This is
+# up to you now: add a "create_offspring_2()" method to the SAGA class or modify
+# the old one.
+
 #"""
 
 

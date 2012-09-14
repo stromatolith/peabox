@@ -17,7 +17,9 @@ But before we do that, let's gather some more diagnostic info to visualise.
 
 So we would like to do two more things:
  - colour coding for ancestry: in the population cloud plot we want to see
-   SA offspring in a different colour than GA offspring
+   SA offspring in a different colour than GA offspring --> maybe one colour
+   will always be in bad score regions and we can stop wasting time on producing
+   these data points
  - pimp the recorder so it collects the SA acceptance rate and such stuff
 
 by Markus Stokmaier, IKET, KIT, Karlsruhe, September 2012
