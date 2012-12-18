@@ -115,6 +115,7 @@ current features
  - tutorial lesson 3b: old-school crossing-over operators for individual's DNAs
  - tutorial lesson 3c: mutation operators - plot DNA vector density distributions
  - tutorial lesson 4: an EA homebrew - stages of exploring a new EA concept
+ - tutorial lesson 5: FM synthesis wave matching - object-oriented implementation of a real-world problem with a candidate solution plotting method
 
 
 features to be added soon
