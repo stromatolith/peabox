@@ -84,7 +84,7 @@ Statistics are for algorithm fine-tuning. Easily visualised test problems are im
 in the phase when you still work creatively with new ideas in quick sequence, they
 allow you to track the algorithm behaviour on the fly, whether it stays in random search mode, stagnates,
 or tends to special types of low-quality optima. In this tutorial lesson the test problem is implemented
-in three different versions. The solution plots are made using Matplotlib. DIfferent EAs are thrown at the
+in three different versions. The solution plots are made using Matplotlib. Different EAs are thrown at the
 problem.
 
 - lesson 5a: implementing the problem producing fragmented code which is difficult to maintain
@@ -94,7 +94,7 @@ problem.
 (About FM synthesis: You probably know these cheesy synthesizer sounds having been used a bit too much
 in the music of the 80s. What was hip at that time, played a substantial role in the cheesiness of the
 sounds and ended up in cheap mass production and under many Christmas Trees of the 90s were FM-synthesizers.
-The "FM" in FM-synthesizer stands for frequency modulation and describes the revolutionary way of sound synthesis.
+The "FM" in FM-synthesizer stands for" frequency modulation" and describes the revolutionary way of sound synthesis.
 What was revolutionised? Before that, electrical sounds were created (e.g. inside a Hammond organ) by
 "additive" and "subtractive" synthesis, meaning you add (linear superposition) sine (or sawtooth or
 similar) waves from several oscillators and then loop the result through a low-, band-, or high-pass filter

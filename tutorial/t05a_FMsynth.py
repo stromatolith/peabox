@@ -112,7 +112,7 @@ definitely need difficult enough test problems. There are many such problems
 available, but you always have to make huge statistics in order to get the
 performance of an EA on it. But if you have a test problem like this one, just
 look at how the plot of the best solution in the population develops over time
-while makeing changes to your EA: does the best solution become better? how
+while making changes to your EA: does the best solution become better? how
 quickly does it improve (starting always from random solutions)?
 
 Of course for algorithm fine-tuning you won't be able to avoid huge statistics,
@@ -217,5 +217,5 @@ print problem_instance.call(x),modified_problem_instance.call(x),'\n\n'
 
 """
 So in the next step let's code this up so such problems have no chance of
-ever shoing up, i.e. let's produce robust and maintainance-friendly code.
+ever showing up, i.e. let's produce robust and maintainance-friendly code.
 """

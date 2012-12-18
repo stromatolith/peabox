@@ -31,10 +31,23 @@ from peabox_individual import Individual
 from peabox_population import Population
 
 # --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
-#--- C: the same by subclass ing Individual
+#--- C: the same by subclassing Individual
 # --    (keeps all together that belongs together)
 # --    (if you make changes inside the new class, you don't have to worry about any code outside it)
 # --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --  --
+"""
+What we basically wanna do here is creating a more complicated individual,
+where the call to Individual.evaluate() does not only point to a call of an
+assigned objective function, but where more complex computation and intermediate
+data storage is initiated. The drawback is of course that each instance of the
+class Individual consumes more memory. But the benefit is that the internals,
+like some intermediate computation quantities, can be accessed afterwards
+by inspecting the instance's attributes or calling dedicated analysis methods.
+
+In this case here we need a new evaluation function and we will add a plot
+utility able to produce snapshots of solution candidates.
+"""
+
 def dummyfunc(x):
     return np.sum(x)
 
