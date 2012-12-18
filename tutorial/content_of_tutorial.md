@@ -71,5 +71,37 @@ got far enough to find out.
 - lesson 4c: more visualisation
 - lesson 4d: efficient EA fine tuning - yes, but after decluttering our head and program (via outside definitions / OOP)
 
+### lesson 5: a real-world test function and some object-orientation
+Frequency modulation (FM) can yield very complex signals, and if more than a few oscillators are
+involved, those signals can take the form of deterministic chaos. Here we consider a finite piece of
+output from three nested sine functions. It is an interesting optimisation problem to search the right
+combination of amplitudes and frequencies to match a given signal sample. How well the two curves match
+can be seen very easily when they are plotted in the same diagram. The combination of the problem's
+nastiness along with the ease of solution quality judgement for a human eye make this a very helpful test
+case for the experimental researcher of optimising algorithms.
+
+Statistics are for algorithm fine-tuning. Easily visualised test problems are important long before that,
+in the phase when you still work creatively with new ideas in quick sequence, they
+allow you to track the algorithm behaviour on the fly, whether it stays in random search mode, stagnates,
+or tends to special types of low-quality optima. In this tutorial lesson the test problem is implemented
+in three different versions. The solution plots are made using Matplotlib. DIfferent EAs are thrown at the
+problem.
+
+- lesson 5a: implementing the problem producing fragmented code which is difficult to maintain
+- lesson 5b: an object-oriented implementation easy to use and lowering the risk of future coding errors
+- lesson 5c: different EAs tested on the FM-synthesis problem
+
+(About FM synthesis: You probably know these cheesy synthesizer sounds having been used a bit too much
+in the music of the 80s. What was hip at that time, played a substantial role in the cheesiness of the
+sounds and ended up in cheap mass production and under many Christmas Trees of the 90s were FM-synthesizers.
+The "FM" in FM-synthesizer stands for frequency modulation and describes the revolutionary way of sound synthesis.
+What was revolutionised? Before that, electrical sounds were created (e.g. inside a Hammond organ) by
+"additive" and "subtractive" synthesis, meaning you add (linear superposition) sine (or sawtooth or
+similar) waves from several oscillators and then loop the result through a low-, band-, or high-pass filter
+or any combination, so the filters diminish or block (subtraction) part of the signal's frequency band.
+Frequency modulation begins if you drop the restriction on addition and subtraction and allow any other
+form of signal interaction like multiplication, division, and function nesting. The simplest form of a signal
+multiplited with a waveform is you standing in front of your hifi system and turning the volume up and down
+regularly. The simplest form of nesting (a sine of a sine) is these North American police sirenes.)
 
 
