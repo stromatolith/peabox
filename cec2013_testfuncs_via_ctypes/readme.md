@@ -22,16 +22,16 @@ Here is the necessary code to make it happen.
 - modify the file test_func.cpp so it is named test_func.c (I don't know if it is necessary, but as it seems to be pure C code
 and it is to be compiled as such, I think it makes sense to clarify.)
 - copy these header lines from main.cpp to test_func.c:
-~~~~~~ objective-c
+``` c
 void test_func(double *, double *,int,int,int);
 double *OShift,*M,*y,*z,*x_bound;
 int ini_flag=0,n_flag,func_flag;
-~~~~~
+```
 - now these lines can be commente out
-~~~~~~ objective-c
+``` c
 //extern double *OShift,*M,*y,*z,*x_bound;;
 //extern int ini_flag,n_flag,func_flag;
-~~~~~
+```
 
 ### step 3, compiling the dynamic library (Linux, Kubuntu to be more exact):
 - compile the file with `gcc -c test_func.c`
