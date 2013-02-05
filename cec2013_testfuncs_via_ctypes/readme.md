@@ -22,13 +22,13 @@ Here is the necessary code to make it happen.
 - modify the file test_func.cpp so it is named test_func.c (I don't know if it is necessary, but as it seems to be pure C code
 and it is to be compiled as such, I think it makes sense to clarify.)
 - copy these header lines from main.cpp to test_func.c:
-~~~~~~ C
+~~~~~~ objective-c
 void test_func(double *, double *,int,int,int);
 double *OShift,*M,*y,*z,*x_bound;
 int ini_flag=0,n_flag,func_flag;
 ~~~~~
 - now these lines can be commente out
-~~~~~~ C
+~~~~~~ objective-c
 //extern double *OShift,*M,*y,*z,*x_bound;;
 //extern int ini_flag,n_flag,func_flag;
 ~~~~~
