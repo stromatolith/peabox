@@ -23,14 +23,18 @@ Here is the necessary code to make it happen.
 and it is to be compiled as such, I think it makes sense to clarify.)
 - copy these header lines from main.cpp to test_func.c:
 
-    void test_func(double *, double *,int,int,int);
-    double *OShift,*M,*y,*z,*x_bound;
-    int ini_flag=0,n_flag,func_flag;
+~~~
+void test_func(double *, double *,int,int,int);
+double *OShift,*M,*y,*z,*x_bound;
+int ini_flag=0,n_flag,func_flag;
+~~~
 
 - now these lines can be commente out
 
-    //extern double *OShift,*M,*y,*z,*x_bound;;
-    //extern int ini_flag,n_flag,func_flag;
+~~~
+//extern double *OShift,*M,*y,*z,*x_bound;;
+//extern int ini_flag,n_flag,func_flag;
+~~~
 
 
 ### step 3, compiling the dynamic library (Linux, Kubuntu to be more exact):
