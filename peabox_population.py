@@ -368,7 +368,13 @@ class Population:
         else:
             for dude in self:
                 dude.set_DNA(params)
-                
+
+    def copy_otherpop(self,otherpop,copyscore=False,copyancestcode=False,copyparents=False):
+        assert len(otherpop)==self.psize
+        assert otherpop.ng==self.ng
+        for dude,otherdude in zip(self,otherpop):
+            dude.copy_DNA_of(otherdude,copyscore=copyscore,copyancestcode=copyancestcode,copyparents=copyparents)
+
     def reset_individual_attributes(self):
         for i,dude in enumerate(self):
             dude.oldno=i; dude.ancestcode=1.; dude.pa=-1; dude.pb=-1; dude.score=0.; dude.gg=self.gg
