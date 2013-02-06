@@ -1,6 +1,11 @@
 #!python
 """
 implementation of a simple real-coded genetic algorithm
+
+but please note
+a) There is not only the old-scool fitness-value-based selection pressure.
+b) By making the F1-population bigger than the F0-population, you can
+   create a (mu+lam)-scheme.
 """
 
 import numpy as np

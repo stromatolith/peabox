@@ -127,6 +127,8 @@ interesting features still missing
 ----------------------------------
 **If you enjoy python coding and EAs belong to your interests, I would be happy about you joining the team!**
  - your EA idea
+ - PSO
+ - SaDE
  - NSGA-II
  - maybe binary DNAs would be interesting for the sake of testing the CHC-GA
  - BGA mutation operator and other popular GA operators
