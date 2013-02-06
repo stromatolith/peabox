@@ -5,6 +5,11 @@ an evolutionary algorithm toolbox written in python
 
 Use it if you want to tinker around with evolutionary algorithms and you do not yet know wheter it will take you into the direction of GA, ES, PSO, DE, simulated annealing etc or if you decline that decision at all.
 
+**newest features:**
+- how to call the CEC-2013 test function suite from within python via ctypes
+- algorithm codes: simple ES, CMA-ES, simple RCGA, scatter search, some EA combination examples
+
+
 motivation
 ----------
 Learning by doing is the only way to familiarise oneself with evolutionary algorithms. Hence, the interest in rapid algorithm prototyping.
@@ -118,10 +123,13 @@ current features
  - tutorial lesson 5: FM synthesis wave matching - object-oriented implementation of a real-world problem with a candidate solution plotting method
 
 
-features to be added soon
--------------------------
- - popular EAs as class definition: evolution strategy (ES), genetic algorithm (GA), differential evolution (DE), scatter search (SCS or SS)
- - local search: greedy, ES, Nelder-Mead
+interesting features still missing
+----------------------------------
+**If you enjoy python coding and EAs belong to your interests, I would be happy about you joining the team!**
+ - your EA idea
+ - NSGA-II
+ - maybe binary DNAs would be interesting for the sake of testing the CHC-GA
+ - BGA mutation operator and other popular GA operators
 
 
 keywords

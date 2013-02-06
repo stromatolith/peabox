@@ -1,6 +1,10 @@
 peabox tutorial
 ===============
 
+##### in general:
+There is no program installation --> just copy the files you need into your work folder (sorry, I didn't
+take the time yet to figure out how to use distutils or other such stuff).
+
 
 ### lesson 1: simple evolution strategy (mu,lambda)-ES
 - create parent and offspring populations
@@ -89,7 +93,14 @@ problem.
 
 - lesson 5a: implementing the problem producing fragmented code which is difficult to maintain
 - lesson 5b: an object-oriented implementation easy to use and lowering the risk of future coding errors
-- lesson 5c: different EAs tested on the FM-synthesis problem
+- lesson 5c: applying scatter search to this optimisation problem
+- lesson 5d: applying a GA-ES-DE combination to this optimisation problem
+- lesson 5e: applying CMA-ES to this optimisation problem
+
+Admittedly, examples 5 c-e are very thinly commented, that is, because I don't have mch time these days.
+I hope the preceding parts of the tutorial explain enough to enable understanding of what happens here. I also hope the
+names of the subroutines in each EA's class definition are as telling as possible and are able to compensate
+for the low comment density.
 
 (About FM synthesis: You probably know these cheesy synthesizer sounds having been used a bit too much
 in the music of the 80s. What was hip at that time, played a substantial role in the cheesiness of the
