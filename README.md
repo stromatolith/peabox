@@ -109,6 +109,11 @@ current features
    * `p.sort_for('anything')` sorts for that if individuals have a property `dude.anything`
  - mutation and recombination operators are able to respect search domain boundaries
  - some CEC-2005 test functions and some other popular test functions
+ - **new:** how to call the CEC-2013 test function suite from within python via ctypes
+ - **new:** basic evolution strategies (ES)
+ - **new:** a basic real-coded genetic algorithm (RCGA) with several options for selection pressure
+ - **new:** scatter search (SCS or SS)
+ - **new:** EA combination examples, e.g. ES+GA+DE-combination
  - a recorder class for regularly taking notes on population status
  - utilities for plotting population histories based on data from recorder objects
  - a little tutorial
