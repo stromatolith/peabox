@@ -8,11 +8,25 @@ test function: CEC-2011 test function 1 --> Parameter Estimation for Frequency-M
 
 what is to be shown here:
 
- - scatter search is and EA involving different pools containing different amounts of DNAs
-   and constantly changing size, but it's okay with this toolbox
-   just have a look at the scatter search source code, it is not really commented, but the subroutine
-   titles should say everything if you have just been glancing over one of the papers by Glover, Laguna, Marti
+ - Scatter search is and EA involving different pools containing different amounts of DNAs
+   and constantly changing size, but it's okay with this toolbox.
+   Just have a look at the scatter search source code, it is not really commented, but the subroutine
+   titles should say everything if you have just been glancing over one of the papers by Glover, Laguna, Marti.
  - benefits of having populations behave like lists
+ - The scatter search source code is large and complex, I included it into the tutorial not because I think
+   it is important to understand it in detail, but only for you to have a little glance at it, for getting 
+   a little impression of what type of problems an EA toolbox needs to be able to solve if it shall be
+   possible to program many kinds of interesting EAs with it. To see the point, just look at the three central
+   populations of the scatter search algorithm, the RefSet, its first tier, and the second tier (self.refset,
+   self.rt1, and self.rt2). All individuals are at the same time member of two of these populations.
+   Sorting one of the populations according to a new criterion and changing the order of individuals within,
+   does not affect the ranking order of the other populations where the involved individuals are also members!
+   This is made possible, because the populations are python lists, and the list entries are in principle only
+   pointers. In most other EA codes the data like DNAs and scores are stored in arrays, which makes some
+   things faster but leads to much less flexibility. Many EA toolboxes claim flexibility and general purpose
+   suitability, but how often does this mean more than that these arrays can have varying dimensions? The
+   question of how easy it would be to program scatter search with a given code framework is I think a good
+   flexibility check.
 
 what can be learned after having thouroughly read the scatter search papers and after
 having had some hands on test function experience with scatter search (e.g. compare it to
@@ -21,6 +35,13 @@ the performance of CMA-ES on e.g. the Weierstrass or the eF8F2 test functions of
  - scatter search stems from the idea of not wasting too much time with random trials
    or more exactly from the wish of avoiding the usage of random where possible
  - difficulty of balancing efforts for global vs. local search
+ - There might be something to be learnt about how different the treatment of real-valued problems
+   with EAs is from treating combinatorial problems. Only recently I realised a subtle little difference
+   in the algorithm implementations presented in the references (a,b) vs (c) given in the source code:
+   the second entry channel into the RefSet via the distance criterion, it exists at any time in (a,b),
+   but it gets closed after the RefSet initialisation in (c). Maybe that second RefSet entry criterion
+   is a drag on the EA in real-parameter optimisation? I didn't yet check it out systematically. What do
+   you think?
 
 Bibliography:
 see scatter search source code
@@ -90,13 +111,13 @@ class FMsynthC(Individual):
     def set_bad_score(self):
         self.score=9999.
 
-def gcb(eaobj):
+def gcb1(eaobj):
     sc=eaobj.refset.get_scores()
     bestidx=array(sc).argmin()
     b=eaobj.refset[bestidx]
     oldscore=b.score
     b.evaluate()
-    assert b.score==oldscore
+    assert b.score==oldscore # just being a little paranoid
     b.plot_FMsynth_solution()
     print 'gcb: score: {}   DNA: {}'.format(b.score,b.DNA)
     print 'gcb: target[:5]: ',b.target[:5]
@@ -116,9 +137,13 @@ ps_ref=20
 dset=Population(FMsynthC,40,dummyfunc,searchspace)
 rset=Population(FMsynthC,ps_ref,dummyfunc,searchspace)
 rec=Recorder(rset)
-ea=ScatterSearch(dset,rset,nref=ps_ref,b1=10,recorder=[rec,1])
-ea.generation_callback=gcb
-ea.gcallback_interval=1
+def gcb2(eaobj):
+    rec.save_status()
+
+ea=ScatterSearch(dset,rset,nref=ps_ref,b1=10)
+ea.refset_update_style='Herrera'
+ea.generation_callbacks.append(gcb1)
+ea.generation_callbacks.append(gcb2)
 
 ea.complete_algo(10)
 

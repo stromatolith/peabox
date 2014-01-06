@@ -20,7 +20,7 @@ individual class, sorry for that messiness, I should have created an own Individ
 
 """
 import numpy as np
-from numpy import mod, shape
+from numpy import mod, shape, argmin, argmax
 from numpy import arange, zeros, where
 from numpy.random import rand
 from time import clock
@@ -29,7 +29,7 @@ from peabox_population import population_like
 
 class ScatterSearch:
 
-    def __init__(self,divset,refset,nref=20,b1=10,recorder=None):
+    def __init__(self,divset,refset,nref=20,b1=10):
         self.divset=divset                               # the divset
         self.refset=refset                               # the refset (keep in mind it may have the recorder attached)
         self.rt1=population_like(refset,size=b1)         # the refset's first tier
@@ -37,6 +37,7 @@ class ScatterSearch:
         #self.refset.folks=self.rt1.folks+self.rt2.folks  # the refset (why not self refset=self.rt1+self.rt2? --> because of the recorder eventually attached to the refset)
         #self.refset.psize=len(self.rt1.folks)+len(self.rt2.folks)
         self.refset.folks=self.rt1+self.rt2
+        self.refset_update_style='Glover'                # 'Glover' or 'Herrera' , i.e. entry into RefSet via distance criterion active or inactive, respectively
         self.pool=population_like(divset,size=0)             # the pool for newly recombined solution candidates
         self.localpop=population_like(divset,size=0)         # a population for the local search
         self.ndiv=len(divset)
@@ -52,10 +53,7 @@ class ScatterSearch:
         self.local_ES_initialized=False
         self.local_greedy_initialized=False
         self.local_NM_initialized=False
-        self.generation_callback=None  # any function recieving this EA instance as argument, e.g. plot current best solution
-        self.gcallback_interval=10     # execute the generation_callback after every 10th generation
-        if recorder is not None:
-            self.rec,self.doku=recorder
+        self.generation_callbacks=[]  # put functions into this list to be called after each generation with this EA instance as argument, e.g. plot current best solution
 
     def adjust_segment_probabilities(self,hist):
         N,nd=shape(hist)
@@ -136,7 +134,37 @@ class ScatterSearch:
             dude.elite=False
             self.divset.pop(0)
         self.refset.update_no()                     # so we only have to care about updating the number labels
+        self.refset_ancestcode_update(status='from_divset')
         return
+    
+    def refset_ancestcode_update(self,status='from_divset'):
+        """updating the individual's attribute 'ancestcode' is only important for in what 
+        colour they appear in the ancestryplot, this method is not essential to the search algorithm"""
+        if status == 'from_divset':
+            for i,dude in enumerate(self.rt1):
+                dude.ancestcode = float(i)/self.b1 * 0.1
+            for i,dude in enumerate(self.rt2):
+                dude.ancestcode = float(i)/(self.nref-self.b1) * 0.1 + 0.2
+        elif status == 'mainloop':
+            if self.refset_update_style == 'Glover':
+                for i,dude in enumerate(self.rt1):
+                    if dude.new == True:
+                        dude.ancestcode = float(i)/self.b1 * 0.1
+                    elif dude.ancestcode <= 0.1:  # that means it has been a newcomer in the last iteration
+                        dude.ancestcode+=0.1
+                for i,dude in enumerate(self.rt2):
+                    if dude.new == True:
+                        dude.ancestcode = float(i)/(self.nref-self.b1) * 0.1 + 0.2
+                    elif 0.2 <= dude.ancestcode <= 0.3:  # that means it has been a newcomer in the last iteration
+                        dude.ancestcode+=0.2
+            if self.refset_update_style == 'Herrera':
+                for i,dude in enumerate(self.refset):
+                    if dude.new == True:
+                        dude.ancestcode = float(i)/self.b1 * 0.1
+                    elif dude.ancestcode <= 0.1:  # that means it has been a newcomer in the last iteration
+                        dude.ancestcode+=0.1
+                    elif 0.2 <= dude.ancestcode <= 0.3:  # formerly new diverse members from divset (only relevant during first iteration)
+                        dude.ancestcode+=0.2
 
     def local_greedy_search(self,dude):
         """corresponds to (1+1)-ES with component-wise uniform mutation and no step size adaption"""
@@ -244,19 +272,31 @@ class ScatterSearch:
         for dude in self.refset:
             dude.new=False
         changed=False
-        self.sort_refset_tiers()
-        for dude in somepop:
-            recently_changed=False
-            # following: acces to elite via fitness and access to second tier through far away position
-            if dude.isbetter(self.rt1[-1]):
-                self.rt1[-1].copy_DNA_of(dude,copyscore=True,copyancestcode=True,copyparents=True)
-                self.rt1[-1].new=True; changed=True; recently_changed=True
-            else:
-                dude.dist=dude.min_distance_to_set(self.rt1)
-                if dude.dist > self.rt2[0].dist:
-                    self.rt2[0].copy_DNA_of(dude,copyscore=True,copyancestcode=True,copyparents=True)
-                    self.rt2[0].new=True; changed=True; recently_changed=True
-            if recently_changed: self.sort_refset_tiers()
+        if self.refset_update_style == 'Glover':
+            self.sort_refset_tiers()
+            for dude in somepop:
+                recently_changed=False
+                # following: acces to elite via fitness and access to second tier through far away position
+                if dude.isbetter(self.rt1[-1]):
+                    self.rt1[-1].copy_DNA_of(dude,copyscore=True,copyancestcode=True,copyparents=True)
+                    self.rt1[-1].new=True; changed=True; recently_changed=True
+                else:
+                    dude.dist=dude.min_distance_to_set(self.rt1)
+                    if dude.dist > self.rt2[-1].dist:
+                        self.rt2[-1].copy_DNA_of(dude,copyscore=True,copyancestcode=True,copyparents=True)
+                        self.rt2[-1].new=True; changed=True; recently_changed=True
+                if recently_changed: self.sort_refset_tiers()
+        elif self.refset_update_style == 'Herrera':
+            self.refset.sort()
+            for dude in somepop:
+                recently_changed=False
+                # following: acces to Refset only via fitness; division into two tiers irrelevant now
+                if dude.isbetter(self.refset[-1]):
+                    self.refset[-1].copy_DNA_of(dude,copyscore=True,copyancestcode=True,copyparents=True)
+                    self.refset[-1].new=True; changed=True; recently_changed=True
+                if recently_changed: self.refset.sort()
+        else:
+            raise ValueError("self.refset_update_style must be either 'Glover' or 'Herrera'")
         return changed
 
     def do_step(self):
@@ -280,14 +320,19 @@ class ScatterSearch:
         print 'SCS: pool: best score of after evaluation: ',np.min(self.pool.get_scores())
         self.improve(self.pool)
         was_change=self.refset_update_from(self.pool)
+        self.refset_ancestcode_update(status='mainloop')
         self.advance_generation()
+        if self.refset_update_style == 'Glover':
+            self.rt1.mark_oldno(); self.rt2.mark_oldno()
+            self.rt1.update_no(); self.rt2.update_no()
+        elif self.refset_update_style == 'Herrera':
+            self.refset.mark_oldno()
+            self.refset.update_no()
         print 'SCS: refset: best score of after completing generation {}: {}'.format(self.refset.gg,np.min(self.refset.get_scores()))
-        if self.generation_callback is not None and not mod(self.refset.gg,self.gcallback_interval):
-            self.generation_callback(self)
-        if hasattr(self,'rec'):
-            if not mod(self.refset.gg,self.doku): self.rec.save_status()
+        for gc in self.generation_callbacks:
+            gc(self)
         return was_change
-
+            
     def advance_generation(self):
         for p in [self.refset,self.divset,self.localpop]:
             p.advance_generation()
@@ -312,13 +357,24 @@ class ScatterSearch:
         print 'SCS: improved divset: best score and DNA of: ',self.divset[0].score,'   ',self.divset[0].DNA
         #self.refset_update_from(self.divset)
         self.fill_refset_from_divset()
+        for gc in self.generation_callbacks:
+            gc(self)
+        print 'SCS: ---------------------------------------- beginning mainloop ----------------------------------------'
         for i in range(maxgenerations):
             was_change=self.do_step()
-            if not mod(i,10): print 'SCS: tier 1: best score: ',self.rt1[0].score
+            if self.refset_update_style == 'Glover':
+                print 'SCS: generation ',self.rt1.gg,', tier 1: best score: ',self.rt1[0].score,"  (update style is 'Glover')"
+            elif self.refset_update_style == 'Herrera':
+                print 'SCS: generation ',self.refset.gg,', refset: best score: ',self.refset[0].score,"  (update style is 'Herrera')"
             if not was_change:
                 print 'SCS: There was no change in the refset over the last iteration. Scatter Search stopped.'
                 break
-        print 'SCS: final refset: best score and DNA: ',self.refset[0].score,'   ',self.refset[0].DNA
+        print 'SCS: ----------------------------------------- ending mainloop ------------------------------------------'
+        if self.refset.whatisfit in ['min','minimise','minimize']:
+            best_idx=argmin(self.refset.get_scores())
+        else:
+            best_idx=argmax(self.refset.get_scores())
+        print 'SCS: final refset: best score and DNA: ',self.refset[best_idx].score,'   ',self.refset[best_idx].DNA
         tend=clock()
         final_evals=self.refset.neval+self.pool.neval+self.localpop.neval
         print 'SCS summary: final score {} after {} function evaluations in {} seconds'.format(np.min(self.refset.get_scores()),final_evals-ini_evals,tend-tstart)

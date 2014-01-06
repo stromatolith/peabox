@@ -107,6 +107,6 @@ for g in range(G):
 #--- part 4: plotting ----------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-ancestryplot(rec,ylimits=[90,130])
-ancestryplot(rec,ylimits=[90,130],whiggle=0.6,suffix='_whiggled')
+ancestryplot(rec,ylimits=[90,130],bg='w')
+ancestryplot(rec,ylimits=[90,130],bg='w',whiggle=0.6,suffix='_whiggled')
 

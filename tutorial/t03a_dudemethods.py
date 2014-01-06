@@ -20,6 +20,9 @@ which has the value 'minimize' or 'maximize', this determines the output of the
 expressions dude1.isbetter(dude2) and dude1.isworse(dude2).
 p.sort() puts 'the best' first, not necessarily the one with lowest score
 
+Next, individuals have the properties dude.no and dude.oldno for storing their
+current and old ranking number.
+
 by Markus Stokmaier, IKET, KIT, Karlsruhe, September 2012
 """
 

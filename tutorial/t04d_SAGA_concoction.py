@@ -25,7 +25,6 @@ from peabox_individual import Individual
 from peabox_testfuncs import CEC05_test_function_producer as tfp
 from peabox_helpers import simple_searchspace
 
-from peabox_recorder import Recorder
 from peabox_plotting import ancestryplot
 from SAGA_defs import SAGA_Population, SAGA, plot_improvement_rates
 
@@ -49,29 +48,27 @@ for i,r in enumerate([0.2,0.5,0.8]):
     parents=SAGA_Population(Individual,ps,f11,searchspace); parents.objname='CEC05 f11'
     offspring=SAGA_Population(Individual,ps,f11,searchspace); offspring.objname='CEC05 f11'
     parents.ncase=2+i
-    parents.set_goalvalue(97)
     
-    rec=Recorder(parents)
-    
-    ea=SAGA(parents,offspring,rec)
+    ea=SAGA(parents,offspring,userec=True)
     ea.AE=0.04
     ea.saga_ratio=r
     ea.reduce_mstep=False
     ea.sa_mstep=0.05
+    ea.rec.set_goalvalue(97)
     ea.simple_run(G)
     txt='best score: {0}'.format(parents[0].score)
-    ancestryplot(rec,whiggle=0.6,ylimits=[90,120],addtext=txt)
-    plot_improvement_rates(rec)
+    ancestryplot(ea.rec,whiggle=0.6,ylimits=[90,120],addtext=txt)
+    plot_improvement_rates(ea.rec)
     
     parents.reset()
     parents.next_subcase()
-    rec.clear()
+    ea.rec.clear()
     ea.reduce_mstep=True
     ea.sa_mstep=0.05      # not really necessary as it stayed fix during first run
     ea.simple_run(G)
     txt='best score: {0}'.format(parents[0].score)
-    ancestryplot(rec,whiggle=0.6,ylimits=[90,120],addtext=txt)
-    plot_improvement_rates(rec)
+    ancestryplot(ea.rec,whiggle=0.6,ylimits=[90,120],addtext=txt)
+    plot_improvement_rates(ea.rec)
 
 # ea.saga_ratio=0.5 seems to be the best setting.
 # That at this point 100% GA will not work is quite clear, remember, there is
@@ -111,33 +108,31 @@ for i,AE in enumerate([0.02,0.04,0.06]):
     parents=SAGA_Population(Individual,ps,f11,searchspace); parents.objname='CEC05 f11'
     offspring=SAGA_Population(Individual,ps,f11,searchspace); offspring.objname='CEC05 f11'
     parents.ncase=5+i
-    parents.set_goalvalue(97)
     
-    rec=Recorder(parents)
-    
-    ea=SAGA(parents,offspring,rec)
+    ea=SAGA(parents,offspring,userec=True)
     ea.AE=AE
     ea.saga_ratio=0.5
     ea.reduce_mstep=True
-    ea.iv_recorder=0
+    ea.rec.set_goalvalue(97)
     
     final_scores=zeros(runs)
     
     for j in range(runs):
         print 'working on run ',j
+        ea.userec=False
         if j!=0:
             parents.reset()
             parents.next_subcase()
         if j==runs-1:
-            ea.iv_recorder=1  # only record the last run
+            ea.userec=True  # only record the last run
         ea.sa_mstep=0.05      # here it is necessary
         ea.simple_run(G)
         final_scores[j]=parents[0].score
         if j==runs-1:        # plot only last run
             print 'making plots from this run with label ',parents.label
             txt='best score: {0}'.format(parents[0].score)
-            ancestryplot(rec,whiggle=0.6,ylimits=[90,120],addtext=txt)
-            plot_improvement_rates(rec)
+            ancestryplot(ea.rec,whiggle=0.6,ylimits=[90,120],addtext=txt)
+            plot_improvement_rates(ea.rec)
     
     print 80*'_'
     print 'final scores: {0}'.format(np.round(final_scores,2))

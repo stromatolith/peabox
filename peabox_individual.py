@@ -9,7 +9,7 @@ In this file:
 
 import numpy as np
 from numpy import sqrt, pi, arctan, mean, mod, ceil
-from numpy import arange, array, ones, zeros, where, argsort
+from numpy import arange, array, asfarray, ones, zeros, where, argsort
 from numpy.random import rand, randn, randint
 
 #--- ToDo:
@@ -49,17 +49,35 @@ class Individual:
     def __str__(self):
         return 'dude'+str(self.no)
     def __eq__(self,otherindividual):
-        return self.score == otherindividual.score
+        if isinstance(otherindividual,Individual):
+            return self.score == otherindividual.score
+        else:
+            return self.score == otherindividual     # makes comparison operator tolerant for direct use with a scalar number
     def __lt__(self,otherindividual):
-        return self.score < otherindividual.score
+        if isinstance(otherindividual,Individual):
+            return self.score < otherindividual.score
+        else:
+            return self.score < otherindividual     # makes comparison operator tolerant for direct use with a scalar number
     def __gt__(self,otherindividual):
-        return self.score > otherindividual.score
+        if isinstance(otherindividual,Individual):
+            return self.score > otherindividual.score
+        else:
+            return self.score > otherindividual     # makes comparison operator tolerant for direct use with a scalar number
     def __le__(self,otherindividual):
-        return self.score <= otherindividual.score
+        if isinstance(otherindividual,Individual):
+            return self.score <= otherindividual.score
+        else:
+            return self.score <= otherindividual     # makes comparison operator tolerant for direct use with a scalar number
     def __ge__(self,otherindividual):
-        return self.score >= otherindividual.score
+        if isinstance(otherindividual,Individual):
+            return self.score >= otherindividual.score
+        else:
+            return self.score >= otherindividual     # makes comparison operator tolerant for direct use with a scalar number
     def __ne__(self,otherindividual):
-        return self.score != otherindividual.score
+        if isinstance(otherindividual,Individual):
+            return self.score != otherindividual.score
+        else:
+            return self.score != otherindividual     # makes comparison operator tolerant for direct use with a scalar number
     def isbetter(self,otherdude):
         if self.whatisfit=='minimize':
             return self < otherdude
@@ -77,30 +95,29 @@ class Individual:
     def get_copy_of_DNA(self):
         return array(self.DNA,copy=1)        
     def set_DNA(self,params):
-        self.DNA[:]=array(params,copy=1)
+        self.DNA[:]=asfarray(params)
     def get_uDNA(self):
         # DNA in a transformed coordinate system corresponding to a unity cube (all parameters range from 0 to 1)
-        uDNA=(self.DNA-self.lls)/self.widths
-        return array(uDNA,copy=1)
+        return (self.DNA-self.lls)/self.widths
     def set_uDNA(self,uparams):
         # set DNA if values are given in terms of an n-dimensional 0-to-1 cube ("u" for unity cube)
-        self.DNA[:]=array(self.widths*uparams+self.lls,copy=1)
+        self.DNA[:]=self.widths*uparams+self.lls
     def center_DNA(self):
         # transfer this individual to the center of the search space
-        newDNA=0.5*(self.lls+self.uls)
-        self.set_DNA(newDNA)
+        self.set_DNA(0.5*(self.lls+self.uls))
     def print_stuff(self,slim=True):
         if slim:
             print self,';  oldno: ',self.oldno,';  pa: ',self.pa,';  pb: ',self.pb,';  score: ',self.score
         else:
             print self,';  oldno: ',self.oldno,';  pa: ',self.pa,';  pb: ',self.pb,';  score: ',self.score,';  DNA: ',self.DNA
     def set_mutagenes(self,params):
-        self.mutagenes[:]=array(params,copy=1)
-    def reset_mutagenes(self,value=1):
-        self.mutagenes=ones(self.ng)*value
-    def copy_DNA_of(self,otherindividual,copyscore=False,copyancestcode=False,copyparents=False):
-        self.DNA[:]=otherindividual.get_copy_of_DNA()
-        self.mutagenes[:]=array(otherindividual.mutagenes,copy=1)
+        self.mutagenes[:]=params
+    def reset_mutagenes(self,value=1.):
+        self.mutagenes[:]=value
+    def copy_DNA_of(self,otherindividual,copyscore=False,copyancestcode=False,copyparents=False,copymutagenes=False):
+        self.DNA[:]=otherindividual.DNA
+        if copymutagenes:
+            self.mutagenes[:]=otherindividual.mutagenes
         self.pa=otherindividual.no; self.pb=-1
         if copyscore:
             self.score=otherindividual.score
@@ -112,6 +129,12 @@ class Individual:
     def random_DNA(self):
         self.set_DNA(self.lls+rand(self.ng)*self.widths)
         self.pa=-1; self.pb=-1; self.ancestcode=1.
+
+    def set_bad_score(self):
+        if self.whatisfit=='minimize':
+            self.score=1e32
+        else:
+            self.score=-1e32
 
     #----- mutation operators ------------------------------------------------------------------------------------------
         
@@ -237,21 +260,16 @@ class Individual:
         self.pa=self.no; self.pb=otherindividual.no; self.ancestcode=0.41
     def CO_from(self,dude1,dude2,P1=0.5):
         # compose DNA through uniform crossing-over of two source folks
-        # P1: probabbility that a gene comes from dude1
-        DNA1=array(dude1.DNA[:],copy=1); DNA2=array(dude2.DNA[:],copy=1)
+        # P1: probability that a gene comes from dude1
         dude1flag=where(rand(dude1.ng)<P1,1,0); dude2flag=ones(dude1.ng)-dude1flag
-        self.DNA[:]=dude1flag*DNA1[:]+dude2flag*DNA2[:]
+        self.DNA[:]=dude1flag*dude1.DNA+dude2flag*dude2.DNA
         self.pa=dude1.no; self.pb=dude2.no; self.ancestcode=0.45
     def become_mixture_of(self,dude1,dude2,fade=0.5):
         # fade: fading percentage weight between source dudes; fade=0 means 100% dude1, fade=1 means 100% dude2
-        DNA1=array(dude1.DNA[:],copy=1); DNA2=array(dude2.DNA[:],copy=1)
-        self.DNA[:]=(1.-fade)*DNA1+fade*DNA2
+        self.DNA[:]=(1.-fade)*dude1.DNA+fade*dude2.DNA
         self.pa=dude1.no; self.pb=dude2.no; self.ancestcode=0.49
     def become_mixture_of_multiple(self,dudelist):
-        n=len(dudelist); pDNA=zeros((n,self.ng))
-        for i,dude in enumerate(dudelist):
-            pDNA[i,:]=array(dude.DNA,copy=1)
-        self.DNA[:]=mean(pDNA,axis=0)
+        self.DNA[:]=mean(array([dude.DNA for dude in dudelist]),axis=0)
         self.pa=1; self.pb=1; self.ancestcode=0.82
 
     #----- now follow some crossing-over operators popular in GA tradition, feel free to add more ----------------------------------------------
@@ -315,29 +333,26 @@ class Individual:
             else:
                 self.DNA[cuts[i]:cuts[i+1]]=DNA2[cuts[i]:cuts[i+1]]
     def BLX_alpha(self,dude1,dude2,alpha=0.5):
-        DNA1=array(dude1.DNA[:],copy=1); DNA2=array(dude2.DNA[:],copy=1)
-        diff=DNA1-DNA2
-        extrapol1=DNA1+alpha*diff; extrapol2=DNA2-alpha*diff
+        diff=dude1.DNA-dude2.DNA
+        extrapol1=dude1.DNA+alpha*diff; extrapol2=dude2.DNA-alpha*diff
         randvec=rand(self.ng)
-        self.DNA=randvec*extrapol1+(1-randvec)*extrapol2
+        self.DNA[:]=randvec*extrapol1+(1-randvec)*extrapol2
         self.mirror_DNA_into_bounds()
         self.pa=dude1.no; self.pb=dude2.no; self.ancestcode=0.61
     def BLX_alpha_beta(self,dude1,dude2,alpha=0.5,beta=0.2):
         # make sure dude1 is the better one
-        DNA1=array(dude1.DNA[:],copy=1); DNA2=array(dude2.DNA[:],copy=1)
-        diff=DNA1-DNA2
-        extrapol1=DNA1+alpha*diff; extrapol2=DNA2-beta*diff
+        diff=dude1.DNA-dude2.DNA
+        extrapol1=dude1.DNA+alpha*diff; extrapol2=dude2.DNA-beta*diff
         randvec=rand(self.ng)
-        self.DNA=randvec*extrapol1+(1-randvec)*extrapol2
+        self.DNA[:]=randvec*extrapol1+(1-randvec)*extrapol2
         self.mirror_DNA_into_bounds()
         self.pa=dude1.no; self.pb=dude2.no; self.ancestcode=0.65
     def WHX(self,dude1,dude2,alpha=1):
         # Wright's heuristic CO
         # make sure dude1 is the better one
-        DNA1=array(dude1.DNA[:],copy=1); DNA2=array(dude2.DNA[:],copy=1)
-        diff=DNA1-DNA2
+        diff=dude1.DNA-dude2.DNA
         randvec=rand(self.ng)
-        self.DNA=DNA1+randvec*alpha*diff
+        self.DNA[:]=dude1.DNA+randvec*alpha*diff
         self.mirror_DNA_into_bounds()
         self.pa=dude1.no; self.pb=dude2.no; self.ancestcode=0.69
 
@@ -359,9 +374,8 @@ class Individual:
 
     def cigar_CO(self,dude1,dude2,aspect=6.,alpha=0.6,beta=0.3,scatter='randn',uCS=True,mirrorbds=True):
         # dude1 is assumed to be the better one
-        DNA1=dude1.get_copy_of_DNA(); DNA2=dude2.get_copy_of_DNA()
         w=1+alpha+beta; x=w*rand()-beta
-        self.DNA[:]=x*DNA2+(1-x)*DNA1
+        self.DNA[:]=x*dude2.DNA+(1-x)*dude1.DNA
         d=dude1.distance_from(dude2,uCS=uCS); d*=w; maxstep=d/aspect
         if scatter=='randn':
             self.mutate(1,maxstep/2.,uCS=uCS)
@@ -370,10 +384,9 @@ class Individual:
 
     def thinned_cigar_CO(self,dude1,dude2,aspect=6.,alpha=0.6,beta=0.3,scatter='randn',thinning=1.,uCS=True,mirrorbds=True):
         # dude1 is assumed to be the better one
-        DNA1=dude1.get_copy_of_DNA(); DNA2=dude2.get_copy_of_DNA()
         thisrand=0.5*(1+arctan(thinning*pi*(rand()-0.5))/arctan(thinning*pi*0.5))
         w=1+alpha+beta; x=w*thisrand-beta
-        self.DNA[:]=x*DNA2+(1-x)*DNA1
+        self.DNA[:]=x*dude2.DNA+(1-x)*dude1.DNA
         d=dude1.distance_from(dude2,uCS=uCS); d*=w; maxstep=d/aspect
         if scatter=='randn':
             self.mutate(1,maxstep/2.,uCS=uCS)
@@ -392,15 +405,15 @@ class Individual:
     def distance_from(self,dude,uCS=False):
         if uCS:
             DNA1=self.get_uDNA(); DNA2=dude.get_uDNA()
+            return sqrt(np.sum((DNA1-DNA2)**2))
         else:
-            DNA1=self.get_copy_of_DNA(); DNA2=dude.get_copy_of_DNA()
-        return sqrt(np.sum((DNA1-DNA2)**2))
+            return sqrt(np.sum((self.DNA-dude.DNA)**2))
     def distance_from_point(self,x,uCS=False):
         if uCS:
             DNA1=self.get_uDNA(); DNA2=(x-self.lls)/self.widths
+            return sqrt(np.sum((DNA1-DNA2)**2))
         else:
-            DNA1=self.get_copy_of_DNA(); DNA2=x
-        return sqrt(np.sum((DNA1-DNA2)**2))
+            return sqrt(np.sum((self.DNA-x)**2))
     def avg_distance_to_set(self,someset,uCS=False):
         """average distance between the dude and the members of someset"""
         r=0.
@@ -421,7 +434,7 @@ class Individual:
 
 
 #-----------------------------------------------------------------------------------------------------------------------------
-#           for a first concept of multi-objective optimisation: class "MOIndividual"
+#--- for a first concept of multi-objective optimisation: class "MOIndividual"
 #-----------------------------------------------------------------------------------------------------------------------------
 
 class MOIndividual(Individual):
@@ -557,6 +570,39 @@ class MOIndividual(Individual):
             self.pb=otherindividual.pb
 
 
+
+#-----------------------------------------------------------------------------------------------------------------------------
+#--- to use the CEC-2013 test function suite via ctypes, I implemented the following subclass
+#-----------------------------------------------------------------------------------------------------------------------------
+
+class cecIndivid(Individual):
+    def __init__(self,ndim):
+        self.objfunc=None
+        self.pars=['p'+str(i).zfill(2) for i in range(ndim)]
+        self.lls=-100*ones(ndim,dtype=float)     # lower limits for DNA vector entries
+        self.uls=+100*ones(ndim,dtype=float)     # upper limits for DNA vector entries
+        self.ng=ndim                             # number of genes (npars stands for number of parameters)
+        self.DNA=zeros(self.ng,dtype=float)      # vector where the value of the genes will be stored in, i.e. the parameter values
+        self.widths=self.uls-self.lls            # parameter band widths
+        self.mstep=0.1                           # own mutation step size parameter, i.e. relation sd to domain width
+        self.mutagenes=ones(self.ng)             # mutation step size multiplier for gene-dependent mutation strengths
+        self.mutstepdistrib=None                 # you can later assign a callable function returning distributed mutation steps for use in self.distributed_jump()
+        self.score=0                             # goal function to be minimized (or maximized) by evolutionary algorithm
+        self.no=0                    # this dude's number within the population
+        self.oldno=0                 # old self.no from last generation (helps for instructive coloring of population plots)
+        self.ancestcode=0.           # number coding for descent, e.g. mutation step size, crossing-over... (helps for instructive coloring of population plots)
+              # values 0...1:  0 to 0.99 -> no to weak mutation,   0.1 to 0.19 -> regular mutation,    0.2 to 0.29 -> mutation with exponential parent choice,   0.35 means recombination,  0.4 means random DNA, rest is still open
+        self.pa=-1                   # parent a  (if pa==-1 it means random DNA)
+        self.pb=-1                   # parent b  (if pb==-1 it means there was no CO involved in the creation of this individual)
+        self.whatisfit='minimize'    # allowed are 'minimize' and 'maximize' telling you what to do with the score function during optimization
+        self.gg=0
+        self.ncase=0
+        self.subcase=0
+    def evaluate(self):
+        raise TypeError('this is a cecIndivid instance - fitness evaluation must take place on the population level')
+
+    def set_bad_score(self):
+        self.score=1e32
 
 
 

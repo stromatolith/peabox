@@ -9,13 +9,14 @@ test function: CEC-2005 test function 11 --> Weierstrass function in 10 dimensio
 what is to be shown here:
 
  - peabox = quick and easy implementation of new EA idea
- - the code is readable, well at least sort of, meaning you can qualitatively
+ - The code is readable, well at least sort of, meaning you can qualitatively
    grasp in a couple seconds what happens when you look at the core part, the
    generation loop (the codes made with peabox perhaps won't win a speed race,
    but they don't need to fear a readability contest with codes based on most
-   other EA libraries out there ==> I don't need to write a lot here explaining
-   how I happened to imagine bringing SA and GA concepts together, just look at
-   the code below, in particular the generation loop in part 3)
+   other EA libraries out there. Because of the easy readability of the code I
+   don't need to write a lot here explaining how exactly I happened to imagine
+   bringing SA and GA concepts together, how the concepts interfere in detail.
+   Just look at the code below, in particular the generation loop in part 3)
 
 for you to tinker:
 

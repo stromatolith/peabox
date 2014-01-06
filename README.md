@@ -94,16 +94,18 @@ class library for rapid prototyping of evolutionary optimisers
  - focus on real parameter optimisation
  - flexibility implementing complex optimisation problems (by subclassing `Individual`)
  - implementing solution candidate plotting is easy (adding plot routine to Individual subclass)
-
-The goal is a rapid iteration cycle for the experimenting architect of evolutionary algorithms.
+ - learning about EA with the help of test functions with visualisable solution candidates (using Matplotlib)
+ - experimenting with useful visualisation of EA run statistics (using Matplotlib)
+ 
+The goal is a rapid iteration cycle (in thinking and code development) for the experimenting architect of evolutionary algorithms.
 
 
 current features
 ----------------
- - Individual class with operators for dealing with own and fellow DNA (i.e. copying, mutating, crossover like uniform, BLX, WHX ...)
- - Population class with functionality for sorting, merging, slicing, pulling array data (and threaded evaluation on a low level)
+ - `Individual` class with operators for dealing with own and fellow DNA (i.e. copying, mutating, crossover like uniform, BLX, WHX ...)
+ - `Population` class with functionality for sorting, splitting, merging, of populations ensuring freedom for EA invention
  - populations behave like a python list, so you can append and slice them
- - individuals have comparison operators
+ - individuals have comparison operators looking at the fitness for asking `dude1<dude2` and `dude1.isbetter(dude2)`
  - hence, a population `p` can easily be sorted:
    * `p.sort()` sorts according to score/fitness of Individuals
    * `p.sort_for('anything')` sorts for that if individuals have a property `dude.anything`

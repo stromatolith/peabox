@@ -67,7 +67,7 @@ Now, after lesson 4d it should have become clear, that always a bit of work on w
 for convenient usage calls (either through class or through enveloping function definitions) is
 necessary to seriously explore a new EA idea. And I think the peabox library can help go through
 the process much more quickly, so you don't throw your EA idea into the trash can too early,
-just because you happened to have one poor parameter setting in you initial code sketch but never
+just because you happened to have one poor parameter setting in your initial code sketch but never
 got far enough to find out.
 
 - lesson 4a: a first algorithmic sketch
@@ -104,7 +104,7 @@ for the low comment density.
 
 (About FM synthesis: You probably know these cheesy synthesizer sounds having been used a bit too much
 in the music of the 80s. What was hip at that time, played a substantial role in the cheesiness of the
-sounds and ended up in cheap mass production and under many Christmas Trees of the 90s were FM-synthesizers.
+sounds and ended up in cheap mass production of keyboard synthesizers with FM and under many Christmas Trees of the 90s.
 The "FM" in FM-synthesizer stands for" frequency modulation" and describes the revolutionary way of sound synthesis.
 What was revolutionised? Before that, electrical sounds were created (e.g. inside a Hammond organ) by
 "additive" and "subtractive" synthesis, meaning you add (linear superposition) sine (or sawtooth or
@@ -112,7 +112,7 @@ similar) waves from several oscillators and then loop the result through a low-,
 or any combination, so the filters diminish or block (subtraction) part of the signal's frequency band.
 Frequency modulation begins if you drop the restriction on addition and subtraction and allow any other
 form of signal interaction like multiplication, division, and function nesting. The simplest form of a signal
-multiplited with a waveform is you standing in front of your hifi system and turning the volume up and down
+multiplied with a waveform is you standing in front of your hifi system and turning the volume up and down
 regularly. The simplest form of nesting (a sine of a sine) is these North American police sirenes.)
 
 

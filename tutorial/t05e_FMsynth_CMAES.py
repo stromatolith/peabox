@@ -82,14 +82,6 @@ class FMsynthC(Individual):
     def set_bad_score(self):
         self.score=9999.
 
-def gcb(eaobj):
-    b=eaobj.bestdude
-    oldscore=b.score
-    b.evaluate()
-    assert b.score==oldscore
-    b.plot_FMsynth_solution()
-    print 'gcb: score: {}   DNA: {}'.format(b.score,b.DNA)
-
 # search space boundaries:
 searchspace=(('amp 1',   -6.4, +6.35),
              ('omega 1', -6.4, +6.35),
@@ -105,12 +97,19 @@ ps=80
 p=Population(FMsynthC,ps,dummyfunc,searchspace)
 rec=Recorder(p)
 ea=CMAES(p,40,rec)       # instanciate the algorithm from library
-ea.generation_callback=gcb
-ea.gcallback_interval=40
-ea.save_best=True
+ea.maxeval=1e6
+
+def gcb(eaobj):
+    if eaobj.F0.gg%10 == 0: # every 10th generation
+        b=eaobj.F0[0]
+        b.plot_FMsynth_solution()
+        print 'gcb: generation: {} score: {}   DNA: {}'.format(eaobj.F0.gg,b.score,b.DNA)
+    rec.save_status()
+
+ea.generation_callbacks.append(gcb)
 
 
-ea.run(400)  # initialise random DNAs and evolve for 100 generations
+ea.run(400,mstep=0.1)  # initialise random DNAs and evolve for 100 generations
 
 ancestryplot(rec,ylimits=[0,70])
 

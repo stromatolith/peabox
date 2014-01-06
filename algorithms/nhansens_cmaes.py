@@ -1,5 +1,7 @@
 #!python
 """
+same as the other file except without division from __future__
+
 I found out that CMA-ES by Nikolaus Hansen and A. Ostermeier is pretty efficient,
 in particular when while averaging over the whole population cloud the search
 landscape offers some useful large-scale gradient information, i.e. when a global
@@ -17,7 +19,6 @@ http://www.lri.fr/~hansen/
 one of his main papers:
 Hansen, N. and A. Ostermeier (2001). Completely Derandomized Self-Adaptation in Evolution Strategies. Evolutionary Computation, 9(2), pp. 159-195
 """
-from __future__ import division
 
 from cPickle import Pickler
 from copy import copy, deepcopy
@@ -39,41 +40,30 @@ class CMAES:
         if mu is not None: self.m=mu
         else: self.m=int(self.l/2)     # mu, i.e. size of parent population
         self.ng=self.F0.ng
-        #self.uCS=uCS
-        if recorder is not None:
-            self.rec=recorder
-            self.rec_interval=1
-            self.rec.snames.append('mstep')
-            self.rec.scmd['mstep']="moreprops['mstep']"
-            self.rec.anames.append('mutagenes')
-            self.rec.acmd['mutagenes']='[0].mutagenes'
-            self.rec.reinitialize_data_dictionaries()
-        else:
-            self.rec_interval=0
         self.weights = log(self.m+0.5) - log(arange(1,self.m+1)) # recombination weights
         self.weights /= np.sum(self.weights) # normalize recombination weights array
         self.mueff=np.sum(self.weights)**2 / np.sum(self.weights**2) # variance-effectiveness of sum w_i x_i
         # Strategy parameter setting: Adaptation
-        self.cc = (4 + self.mueff/self.ng) / (self.ng+4 + 2 * self.mueff/self.ng)  # time constant for cumulation for C
-        self.cs = (self.mueff + 2) / (self.ng + self.mueff + 5)  # t-const for cumulation for sigma control
-        self.c1 = 2 / ((self.ng + 1.3)**2 + self.mueff)     # learning rate for rank-one update of C
-        self.cmu = 2 * (self.mueff - 2 + 1/self.mueff) / ((self.ng + 2)**2 + self.mueff)  # and for rank-mu update
-        self.damps = 2 * self.mueff/self.l + 0.3 + self.cs  # damping for sigma, usually close to 1
+        self.cc = (4. + self.mueff/self.ng) / (self.ng+4. + 2. * self.mueff/self.ng)  # time constant for cumulation for C
+        self.cs = (self.mueff + 2) / (self.ng + self.mueff + 5.)  # t-const for cumulation for sigma control
+        self.c1 = 2. / ((self.ng + 1.3)**2 + self.mueff)     # learning rate for rank-one update of C
+        self.cmu = 2. * (self.mueff - 2. + 1./self.mueff) / ((self.ng + 2.)**2 + self.mueff)  # and for rank-mu update
+        self.damps = 2. * self.mueff/self.l + 0.3 + self.cs  # damping for sigma, usually close to 1
         # Initialize dynamic (internal) state variables and constants
         self.initialize_internals()
-        self.F0.moreprops['mstep']=self.mstep
         self.boundary_treatment='mirror'
         self.save_best=True
         self.bestdude=None
         self.maxsigma=None
         self.c1a_adjustment=True
-        self.generation_callback=None  # any function recieving this EA instance as argument, e.g. plot current best solution
-        self.gcallback_interval=0     # execute the generation_callback after every 10th generation
-        self.more_stop_crits=[]
+        self.pickle_interval=0
+        self.generation_callbacks=[]  # put functions into this list to be called after each generation with this EA instance as argument, e.g. plot current best solution
+        self.more_stop_crits=[stopper]
+        self.maxeval=0
         
-    def initialize_internals(self):
+    def initialize_internals(self,mstep=0.1):
         # Initialize dynamic (internal) state variables and constants
-        self.mstep=0.1
+        self.mstep=mstep
         self.xmean=zeros(self.ng)
         self.pc = zeros(self.ng)
         self.ps = zeros(self.ng)  # evolution paths for C and sigma
@@ -101,22 +91,25 @@ class CMAES:
             elif self.boundary_treatment=='cycle': dude.cycle_DNA_into_bounds()
             elif self.boundary_treatment=='cycle_and_scatter': dude.cycle_and_scatter_DNA_into_bounds()
             elif self.boundary_treatment=='scatter': dude.randomize_DNA_into_bounds()
-            else: pass   #elif self.boundary_treatment=='nobounds': pass
+            elif self.boundary_treatment=='nobounds': pass
+            else: raise ValueError('invalid flag for boundary treatment')
 
     def do_step(self):
         self.advance_generation()
         self.update_internals()
-        if self.generation_callback is not None and self.gcallback_interval and not mod(self.F0.gg,self.gcallback_interval):
-            self.generation_callback(self)
-        self.record_stuff()
         if self.save_best:
-            if self.bestdude is None:
-                self.bestdude=deepcopy(self.F0[0])
-            else:
-                if self.F0[0].isbetter(self.bestdude):
-                    self.bestdude.copy_DNA_of(self.F0[0],copyscore=True,copyparents=True,copyancestcode=True)
-                    self.bestdude.gg=self.F0[0].gg
+            self.update_bestdude()
+        for gc in self.generation_callbacks:
+            gc(self)
         
+    def update_bestdude(self):
+        if self.bestdude is None:
+            self.bestdude=deepcopy(self.F0[0])
+        else:
+            if self.F0[0].isbetter(self.bestdude):
+                self.bestdude.copy_DNA_of(self.F0[0],copyscore=True,copyparents=True,copyancestcode=True,copymutagenes=True)
+                self.bestdude.gg=self.F0[0].gg
+
     def advance_generation(self):
         # Generate and evaluate lam offspring
         self.F0.advance_generation()
@@ -127,11 +120,11 @@ class CMAES:
             elif self.boundary_treatment=='cycle': dude.cycle_DNA_into_bounds()
             elif self.boundary_treatment=='cycle_and_scatter': dude.cycle_and_scatter_DNA_into_bounds()
             elif self.boundary_treatment=='scatter': dude.randomize_DNA_into_bounds()
-            else: pass   #elif self.boundary_treatment=='nobounds': pass
+            elif self.boundary_treatment=='nobounds': pass
+            else: raise ValueError('invalid flag for boundary treatment')
         self.F0.eval_all()
         self.neval+=self.F0.psize
         self.sorting_procedure()
-        self.F0.check_and_note_goal_fulfillment()
     
     def update_internals(self):
         xold = copy(self.xmean)
@@ -139,23 +132,24 @@ class CMAES:
             self.goodDNA[i,:]=dude.get_uDNA()
         self.xmean = dot(self.goodDNA.T,self.weights)  # recombination, new mean value
         # Cumulation: Update evolution paths 
-        self.ps = (1-self.cs)*self.ps + ((self.cs*(2-self.cs)*self.mueff)**0.5/self.mstep)*dot(self.invsqrtC,(self.xmean-xold))  # see slide 86 in Hansen's PPSN 2006 CMA Tutorial Talk
-        hsig = np.sum(self.ps**2)/(1-(1-self.cs)**(2*self.neval/self.l))/self.ng < 2 + 4/(self.ng+1)
-        self.pc = (1-self.cc)*self.pc + ((self.cc*(2-self.cc)*self.mueff)**0.5/self.mstep)*hsig*(self.xmean-xold)
+        self.ps = (1.-self.cs)*self.ps + ((self.cs*(2.-self.cs)*self.mueff)**0.5/self.mstep)*dot(self.invsqrtC,(self.xmean-xold))  # see slide 86 in Hansen's PPSN 2006 CMA Tutorial Talk
+        hsig = np.sum(self.ps**2)/(1.-(1.-self.cs)**(2.*self.neval/float(self.l)))/self.ng < 2. + 4./(self.ng+1.)
+        self.pc = (1.-self.cc)*self.pc + ((self.cc*(2.-self.cc)*self.mueff)**0.5/self.mstep)*hsig*(self.xmean-xold)
+        #print 'generation {}: psig[:3] = {} and pc[:3] = {}'.format(self.F0.gg,self.ps[:3],self.pc[:3])
         # Adapt covariance matrix C
         Z = (self.goodDNA-xold) / self.mstep
         Z = dot((self.cmu * self.weights) * Z.T, Z)  # learning rate integrated
         if self.c1a_adjustment==True:
-            c1a = self.c1 - (1-hsig**2) * self.c1 * self.cc * (2-self.cc)  # minor adjustment for variance loss by hsig
-            self.C = (1 - c1a - self.cmu) * self.C + outer(self.c1 * self.pc, self.pc) + Z
+            c1a = self.c1 - (1.-hsig**2) * self.c1 * self.cc * (2.-self.cc)  # minor adjustment for variance loss by hsig
+            self.C = (1. - c1a - self.cmu) * self.C + outer(self.c1 * self.pc, self.pc) + Z
         else:
-            self.C = (1 - self.c1 - self.cmu) * self.C + outer(self.c1 * self.pc, self.pc) + Z        
+            self.C = (1. - self.c1 - self.cmu) * self.C + outer(self.c1 * self.pc, self.pc) + Z        
         # Adapt step size sigma with factor <= exp(1/2) \approx 1.65
-        self.mstep *= exp(np.min((0.5, (self.cs/self.damps) * (np.sum(self.ps**2) / self.ng - 1) / 2),axis=0))  # this is the alternative - see p 18-19 of his tutorial article
+        self.mstep *= exp(np.min((0.5, (self.cs/self.damps) * (np.sum(self.ps**2) / self.ng - 1.) / 2.),axis=0))  # this is the alternative - see p 18-19 of his tutorial article
         if self.maxsigma is not None: self.mstep=min(self.mstep,self.maxsigma)
         self.F0.moreprops['mstep']=self.mstep        
         # Eigendecomposition: update B, D and invsqrtC from C 
-        if self.neval - self.last_cm_update > self.l/(self.c1+self.cmu)/self.ng/10:  # to achieve O(N^2)
+        if self.neval - self.last_cm_update > self.l/(self.c1+self.cmu)/float(self.ng)/10.:  # to achieve O(N^2)
             self.D,self.B = eigh(self.C)              # eigen decomposition, B==normalized eigenvectors
             self.D = self.D**0.5   # D contains standard deviations now (being a 1D array)
             Darr = diag(1./self.D)  # is a 2D array
@@ -163,8 +157,8 @@ class CMAES:
             self.last_cm_update = self.neval
             self.F0.reset_all_mutagenes(self.D)
 
-    def run(self,generations,reset_CMA_state=True,xstart='best'):
-        # if xstart can be a DNA vector/list
+    def run(self,generations,reset_CMA_state=True,xstart='best',mstep=None):
+        # xstart can be a DNA vector/list
         # if xstart=='continue': starting point based on weighted DNAs of the best mu individuals
         # if xstart=='best': start with the DNA of self.F0[0]
         # else: start with mean of all current DNAs, i.e. the current center of the cloud
@@ -172,44 +166,75 @@ class CMAES:
             if self.F0.psize != self.l:
                 self.F0.change_size(self.l)    # parent population should only be of size mu, and not as big as lambd; the bigger size here is only for the purpose of scorehistory recording of all trials within the daughter population
             self.F0.reset_all_mutagenes(1.)
-            self.initialize_internals()
+            if mstep is not None:
+                self.initialize_internals(mstep=mstep)
+            else:
+                self.initialize_internals()
         for dude in self.F0:
             dude.pa=0; dude.pb=-1; dude.ancestcode=0.87
         if xstart=='best':
             sDNA=self.F0[0].get_uDNA(); self.xmean=sDNA; [dude.set_uDNA(sDNA) for dude in self.F0]
+            #print 'starting with best DNA: ',sDNA
         elif type(xstart) in [np.ndarray,list,tuple]:
             [dude.set_DNA(xstart) for dude in self.F0]; self.xmean=self.F0[0].get_uDNA()
         elif xstart=='continue':
             pass
         else:  # including xstart=='mean'
             self.xmean=self.F0.mean_DNA(uCS=True); [dude.set_uDNA(self.xmean) for dude in self.F0]
+        print 'starting with best DNA: ',self.xmean
         for gg in range(generations):
             self.do_step()
-            if len(self.more_stop_crits) != 0:
-                morestopvals=[]
-                for crit in self.more_stop_crits:
-                    morestopvals.append(crit(self))
-                if True in morestopvals:
-                    print "algorithm's run() terminated because of '+str(morestopvals.index(True))+'th additional stopping criterion"
-                    break
-        if hasattr(self,'rec'):
-            self.rec.save_goalstatus()
+            if self.other_stopcrit_returned_True():
+                break
         return
 
-    def record_stuff(self):
-        #self.pickle_self()
-        if hasattr(self,'rec'):
-            if self.rec_interval and not mod(self.F0.gg,self.rec_interval):
-                #self.F0.pickle_self()
-                self.rec.save_status()
+    def random_ini_and_run(self,generations,reset_CMA_state=True,xstart='best',mstep=None,reset_bestdude=True):
+        if reset_bestdude:
+            self.bestdude=None
+        self.F0.new_random_genes()
+        self.F0.zeroth_generation()
+        if self.save_best:
+            self.update_bestdude()
+        for gc in self.generation_callbacks:
+            gc(self)
+        self.run(generations,reset_CMA_state=reset_CMA_state,xstart=xstart,mstep=mstep)
     
+    def cec_run_01(self):
+        self.maxeval=20000  #int(1e4*self.F0.ng)
+        self.mstep=0.15
+        self.random_ini_and_run(1000)
+        
+    def other_stopcrit_returned_True(self):
+        if len(self.more_stop_crits) != 0:
+            morestopvals=[]
+            for crit in self.more_stop_crits:
+                morestopvals.append(crit(self))
+            if True in morestopvals:
+                #print "algorithm's run() terminated because of '+str(morestopvals.index(True))+'th additional stopping criterion"
+                return True
+            else:
+                return False
+        else:
+            return False
+
     def pickle_self(self):
         ofile=open(self.F0.picklepath+'/EA_'+self.F0.label+'.txt', 'w')
         einmachglas=Pickler(ofile)
         einmachglas.dump(self)
-        ofile.close()            
+        ofile.close()
+    
+    def tell_neval(self):
+        return self.F0.neval
          
 
+#------------------------------------------------------------------------------
+#--- utilities
+#------------------------------------------------------------------------------
 
+def stopper(eaobj):
+    if eaobj.F0.neval>=eaobj.maxeval:
+        return True
+    else:
+        return False
 
 

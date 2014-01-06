@@ -61,6 +61,7 @@ class TFContainer:
         self.M=zeros((dim,dim))
         self.fbias=0.
         self.dim=dim
+        self.check_data_availability()
     def call(self,x):
         raise NotImplementedError("you should only use a subclass of TFContainer where a suitable method 'call(self,x)' has been implemented")
     def get_data_1(self,numero,radical,suffix='_func_data'):
@@ -82,6 +83,14 @@ class TFContainer:
         else:
             M=None
         return fbias,o,M
+    def check_data_availability(self):
+        try:
+            loadmat('./CEC05_files/fbias_data.mat')
+        except:
+            msg="the CEC-2005 shift and rotation data arrays (the matlab matrices *.mat)"
+            msg+=" must be made available in a subfolder called 'CEC05_files'; "
+            msg+="you can download them from http://www.ntu.edu.sg/home/epnsugan/"
+            raise UserWarning(msg)
 
 class CEC05_f1_container(TFContainer):
     # shifted sphere function

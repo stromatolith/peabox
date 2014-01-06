@@ -68,7 +68,12 @@ ms_rec=[]  # for recording mutation step size history
 #-------------------------------------------------------------------------------
 #--- part 3: the loop for (mu,la)-ES -------------------------------------------
 #-------------------------------------------------------------------------------
-
+"""
+The big advantage of peabox can be seen in the inner loop below: it is super
+easily readable (for dude in offspring: copy .. mutate .. evaluate).
+Commenting is not required, because the code is so readable, it looks
+like pseudocode. This is the main purpose why I wrote this EA library.
+"""
 for g in range(50):    # generation loop
     parents.sort()
     successrate=0.

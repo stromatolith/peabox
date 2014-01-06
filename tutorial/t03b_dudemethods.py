@@ -72,7 +72,7 @@ p5a.marker_genes()
 p5b.marker_genes(offset=10)
 print 2*'\n'
 
-print "haveing members of p5a cross DNAs with members of p5b"
+print "having members of p5a cross DNAs with members of p5b"
 for adude,bdude in zip(p5a,p5b):
     adude.CO_with(bdude)
 p5a.print_stuff()
@@ -82,7 +82,7 @@ p5a.marker_genes()
 p5b.marker_genes(offset=10)
 print 2*'\n'
 
-print "one more thing about the two uniform CO operators CO_from() and CO_with:"
+print "one more thing about the two uniform CO operators CO_from() and CO_with():"
 print "there is a parameter to steer the probability weight between 1st and 2nd parent"
 p5c=Population(Individual,2,parabolic,searchspace5)
 p5d=Population(Individual,200,parabolic,searchspace5)
@@ -94,7 +94,7 @@ for dude in p5d:
 print 'np.mean(p5d.get_DNAs()) yields ',np.mean(p5d.get_DNAs())
 print 2*'\n'
 
-print "another operator generating one offspring from two parents: simple mixing"
+print "another option of generating one offspring from two parents is simple mixing"
 parentA.set_DNA(npr.randint(10,size=5))
 parentB.set_DNA(npr.randint(10,size=5))
 print 'parentA.DNA: ',parentA.DNA

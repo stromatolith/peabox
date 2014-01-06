@@ -24,7 +24,7 @@ class Recorder:
         self.acmd={'DNAs':'get_DNAs()', 'scores':'get_scores()', 'ancestcodes':'get_ancestcodes()'}
         self.reinitialize_data_dictionaries()
         self.ownname='rec'
-        self.save_goalstatus()
+        self.goal={'goalvalue':0,'fulfilltime':-1, 'fulfillcalls':-1}   # you can define a convergence criterium goalvalue and note down the generation when there was the first Individual getting the corresponding score
         
     def reinitialize_data_dictionaries(self):
         self.sdat={}               # scalar data
@@ -62,14 +62,26 @@ class Recorder:
                 self.adat[name].append(data)
             else:
                 self.adat[name].append(eval('array(self.p.'+cmd+',copy=1)'))
-        
-    def save_goalstatus(self):
-        for name in self.goaldictnames:
-            self.gddat[name]=eval('copy(self.p.'+name+')')
-    
+        self.check_and_note_goal_fulfillment()
+
+    def set_goalvalue(self,value,reset=True):
+        self.goal['goalvalue']=value
+        if reset:
+            self.goal['fulfilltime']=-1; self.goal['fulfillcalls']=-1
+
+    def check_and_note_goal_fulfillment(self):
+        sc=self.p.get_scores()
+        factor=1.
+        if self.p.whatisfit=='maximize': factor=-1.
+        if self.goal['fulfilltime']==-1 and np.min(factor*sc) <= factor*self.goal['goalvalue']:
+            self.goal['fulfilltime']=self.p.gg
+            self.goal['fulfillcalls']=self.p.neval
+
     def clear(self):
         self.gg=[]
         self.reinitialize_data_dictionaries()
+        self.goal['fulfilltime']=-1
+        self.goal['fulfillcalls']=-1
 
     def pickle_self(self):
         ofile=open(join(self.p.picklepath,self.ownname+'_'+self.p.label+'.txt'), 'w')
@@ -80,7 +92,7 @@ class Recorder:
         
 
 class MORecorder(Recorder):
-    
+    """for a MOPopulation instance"""
     def __init__(self,population):
         self.p=population
         self.gg=[]
@@ -98,7 +110,7 @@ class MORecorder(Recorder):
 
 
 class wTORecorder(MORecorder):
-    
+    """for a wTOPopulations instance"""
     def __init__(self,population):
         MORecorder.__init__(self,population)
         self.snames+=['optsx','optrx']

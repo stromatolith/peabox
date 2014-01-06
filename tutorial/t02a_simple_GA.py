@@ -34,7 +34,7 @@ order to learn about the basics)
    sequences (if you plot each generation and click through the images quickly)
    see how gene values seem to jump across the landscape independently
    until each one finds a good place along its axis --> because they really are
-   moving independently as the the recombination operator, so heavily used,
+   moving independently as the recombination operator, so heavily used,
    constantly tries to bring the best genes together from different individuals
    (an ES wound make the whole pattern jump at once incrementally instead of
    single genes jumping wiedely)

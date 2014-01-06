@@ -9,7 +9,15 @@ test function: N-dimensional parabolic potential
 
 what is to be shown here:
 
- - how to mess with DNA
+ - in older literature on evolution strategies by Ingo Rechenberg one often
+   sees a mutation operator shifting a chromosome where the directions are
+   random but the distances are all the same. Having that mutation operator
+   implemented in a general form as a method of the class Individual allows
+   us to do some interesting experiments concerning dimensionality quickly.
+   
+ - if you are interested, then look at the source code of the Individual class
+   for finding out the meaning and purpose of the keyword argument uCS (see
+   also remarks at end of code)
 
 by Markus Stokmaier, IKET, KIT, Karlsruhe, September 2012
 """
@@ -25,14 +33,14 @@ from peabox_population import Population
 def parabolic(x):
     return np.sum(x*x)
 
-searchspace2=(('p1',-20.,+20.),
+searchspace2=(('p1',-20.,+40.),
               ('p2',-20.,+20.))
 
-searchspace3=(('p1',-20.,+20.),
+searchspace3=(('p1',-20.,+40.),
               ('p2',-20.,+20.),
               ('p3',-20.,+20.))
 
-searchspace5=(('p1',-20.,+20.),
+searchspace5=(('p1',-20.,+40.),
               ('p2',-20.,+20.),
               ('p3',-20.,+20.),
               ('p4',-20.,+20.),
@@ -53,7 +61,7 @@ startDNA3=p3a[0].get_copy_of_DNA()
 startDNA5=p5a[0].get_copy_of_DNA()
 
 # now mutate by adding a vector of well-defined length D=4 into a random direction
-D=0.3
+D=0.3   #*40  # multiplication with 40 for getting a similar result with uCS=False
 nn=5000
 plotdat2D=zeros((N*nn+2,2))
 plotdat3D=zeros((N*nn+2,2))
@@ -98,11 +106,11 @@ elif mirror_or_cycle_into_bounds=='cycle':
 
 for dim,dat in zip([2,3,5],[plotdat2D,plotdat3D,plotdat5D]):
     dat[-2,:]=[-20,-20]
-    dat[-1,:]=[+20,+20]
+    dat[-1,:]=[+40,+20]
     plt.hexbin(dat[:,0],dat[:,1], cmap=mpl.cm.gist_stern,gridsize=40)
     plt.colorbar()
     #plt.axis('equal')
-    plt.xlim(-20,20)
+    plt.xlim(-20,40)
     plt.ylim(-20,20)
     plt.xlabel('DNA[0]')
     plt.ylabel('DNA[1]')

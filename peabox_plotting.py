@@ -3,13 +3,23 @@
 from os.path import join
 from time import time, localtime
 
-from pylab import *
+#from pylab import *
+
+import numpy as np
+from numpy import array, asfarray, zeros, ones, arange, flipud, linspace, prod, where
+from numpy import floor, ceil, log10
+from numpy.random import rand, randn, randint
+
+#import matplotlib as mpl
+#mpl.use('Agg')
+import matplotlib.pyplot as plt
+from pylab import cm
 
 from matplotlib.colors import LinearSegmentedColormap, rgb2hex
-from matplotlib.collections import LineCollection, CircleCollection, PatchCollection
-from matplotlib.patches import Circle, Wedge, Polygon
-from matplotlib.lines import Line2D
-from matplotlib import font_manager
+#from matplotlib.collections import LineCollection, CircleCollection, PatchCollection
+#from matplotlib.patches import Circle, Wedge, Polygon
+#from matplotlib.lines import Line2D
+#from matplotlib import font_manager
 
 from peabox_population import MOPopulation, wTOPopulation
 
@@ -96,6 +106,12 @@ cdict_sidekick = {'red':  ((0.00, 1.0, 1.0),
                            (0.86, 0.0, 0.0),
                            (1.00, 0.2, 0.2))}
 sidekick = LinearSegmentedColormap('sidekick', cdict_sidekick)
+
+
+cdict_murmel = {'red':  ((0.0, 0.0, 0.3),(1.0,1.0, 0.0)),
+               'green': ((0.0, 0.0, 0.2),(1.0,0.9, 0.0)),
+               'blue':  ((0.0, 0.0, 0.0),(1.0,0.2, 1.0))}
+murmelfarbe = LinearSegmentedColormap('murmelfarbe', cdict_murmel)
 
 def show_these_colormaps(cmlist,picname):
     nmaps=len(cmlist)
@@ -187,40 +203,57 @@ def mstepplot(rec,path,title=None,addtext=None,xscale='linear',yscale='linear',y
         plt.savefig(join(path,'mstepplot_c'+str(p.ncase)+'_sc'+str(p.subcase).zfill(3)+'_g'+str(p.gg)+'.png'))
     plt.close()
 
-def ancestryplot(rec,ginter=None,path=None,title=None,addtext=None,textbox=None,yscale='linear',ylimits=None,whiggle=0,picname=None,ec='k',bg='w',suffix=''):
-    # instructive plot of how cloud of scores developes over time; color codes for ancestry situation
-    p=rec.p; gg=rec.gg
-    x=[]; y=[]; c=[]
-    for i,g in enumerate(gg):
-        for s,ac in zip(rec.adat['scores'][i],rec.adat['ancestcodes'][i]):
-            x.append(g)
-            y.append(s)
-            c.append(ancestcolors(ac))
-    x.append(-2); y.append(0); c.append(ancestcolors(0.))
-    x.append(-2); y.append(0); c.append(ancestcolors(1.))
-    x=flipud(array(x)); y=flipud(array(y)); c=flipud(array(c)); #print 'shape(c)',shape(c)
+def ancestryplot(reclist,ginter=None,path=None,title=None,addtext=None,textbox=None,yscale='linear',ylimits=None,
+                 yoffset=None,whiggle=0,picname=None,ec='same',bg=cm.bone(0.18),suffix=''): # old: ec='k',bg='w'
+    """
+    instructive plot of how cloud of scores developes over time; color codes for ancestry situation
+    argument reclist is expected to be a list of peabox_recorder.Recorder instances (but a Recorder instance not in a list will be handled)
+    """
+    if type(reclist)!=list: reclist=[reclist]
+    #p=rec.p; gg=rec.gg
+    x=[]; y=[]; c=[]; allgg=[]
+    for rec in reclist:
+        allgg+=rec.gg
+        for i,g in enumerate(rec.gg):
+            for s,ac in zip(rec.adat['scores'][i],rec.adat['ancestcodes'][i]):
+                x.append(g)
+                y.append(s)
+                c.append(ancestcolors(ac))
+    if rec.p.whatisfit=='minimize':
+        best_score=np.min(array(y))
+    else:
+        best_score=np.max(array(y))
+    x.append(np.min(allgg)-1); y.append(np.mean(reclist[0].adat['scores'][0])); c.append(ancestcolors(0.)) # need to cover whole interval [0,1] ...
+    x.append(np.min(allgg)-1); y.append(np.mean(reclist[0].adat['scores'][0])); c.append(ancestcolors(1.)) # ... so colormap works all right
+    x=flipud(array(x)); y=flipud(array(y)); c=flipud(array(c)); # why flipud? --> a zorder issue
     if whiggle: x=x+whiggle*rand(len(x))-0.5*whiggle
+    if yoffset is not None:
+        y+=yoffset
     if ec=='same':
         plt.scatter(x,y,marker='o',c=c,edgecolors=c,cmap=ancestcolors,zorder=True)
     else:
         plt.scatter(x,y,marker='o',c=c,edgecolors=ec,cmap=ancestcolors,zorder=True)
     ax=plt.axes(); ax.set_axis_bgcolor(bg)
-    if len(rec.gddat['goal']):
-        if rec.gddat['goal']['fulfilltime']==-1:
-            goaltext='goal (score={0}) not met'.format(rec.gddat['goal']['goalvalue'])
-        else:
-            goaltext='goal (score={0}) met after {1} generations and {2} calls'.format(rec.gddat['goal']['goalvalue'],rec.gddat['goal']['fulfilltime'],rec.gddat['goal']['fulfillcalls'])
-            plt.axvline(x=rec.gddat['goal']['fulfilltime'],color='b')
-        plt.suptitle(goaltext,x=0.022,y=0.015,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+    fftimes=array([rec.goal['fulfilltime'] for rec in reclist])
+    gvals=array([rec.goal['goalvalue'] for rec in reclist])
+    assert np.min(gvals)==np.max(gvals)
+    if np.all(fftimes==-1):
+        goaltext='goal (score={0}) not met'.format(rec.goal['goalvalue'])
+    else:
+        goal_reached=where(fftimes>=0,1,0); whichrec=list(goal_reached).index(1); rec=reclist[whichrec]
+        goaltext='goal (score={0}) met after {1} generations and {2} calls'.format(rec.goal['goalvalue'],rec.goal['fulfilltime'],rec.goal['fulfillcalls'])
+        plt.axvline(x=rec.goal['fulfilltime'],color='b')
+    plt.suptitle(goaltext,x=0.022,y=0.015,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
     if yscale=='log':
         plt.semilogy()
     if ylimits is not None:
         plt.ylim(ylimits)
     if ginter==None:
-        plt.xlim(-1,gg[-1]+1)
+        plt.xlim(np.min(allgg)-1,np.max(allgg)+1)
     else:
         gini,gend=ginter; plt.xlim(gini,gend)
     #plt.colorbar()
+    p=reclist[0].p
     if title is None:
         if isinstance(p,wTOPopulation):
             title='case {1} subcase {2} generation {3}\nwTOO with objectives {0}'.format(p.objnames,p.ncase,p.subcase,p.gg)
@@ -228,21 +261,26 @@ def ancestryplot(rec,ginter=None,path=None,title=None,addtext=None,textbox=None,
             title='case {1} subcase {2} generation {3}\nMOO with objectives {0}'.format(p.objnames,p.ncase,p.subcase,p.gg)
         else:
             title='case {1} subcase {2} generation {3}\nSOO with objective {0}'.format(p.objname,p.ncase,p.subcase,p.gg)
+        title+=r'  $\rightarrow$  final score = {}'.format(best_score)
     plt.title(title, fontsize=10)
-    plt.xlabel('generations'); plt.ylabel('score')
-    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    plt.xlabel('generations'); 
+    if yoffset is None:
+        plt.ylabel('score')
+    else:
+        plt.ylabel('score with offset '+str(yoffset))
+    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, ha='right',va='bottom', fontsize=8)
     if addtext is not None:
-        plt.suptitle(addtext,x=0.02,y=0.04,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+        plt.suptitle(addtext,x=0.02,y=0.04,ha='left',va='bottom',fontsize=6)
     if textbox is not None:
         boxtext,fsize=textbox
         #tbx=plt.suptitle(boxtext,x=0.93,y=0.93,ha='right',va='top',fontsize=fsize)
-        tbx=plt.text(0.6,0.93,boxtext,transform=plt.axes().transAxes,ha='left',va='top',fontsize=fsize)
+        tbx=plt.text(0.93,0.93,boxtext,transform=plt.axes().transAxes,ha='right',va='top',fontsize=fsize)
         tbx.set_bbox(dict(facecolor='gray', alpha=0.25))
     if path is None: path=rec.p.plotpath
     if picname is None:
-        if ginter is None: picname='ancestryplot_'+p.label
+        if ginter is None: picname='ancestryplot_'+reclist[-1].p.label
         else: picname='ancestryplot_c'+str(p.ncase).zfill(3)+'_sc'+str(p.subcase).zfill(3)+'_g'+str(gini)+'to'+str(gend)
-    plt.savefig(join(path,picname+suffix+'.png'))
+    plt.savefig(join(path,picname+'_'+suffix+'.png'))
     plt.close()
     
 def paretoplots(rec,path,xcrit=0,ycrit=1,colordata='alloscores',
@@ -443,6 +481,139 @@ def fmsynthplot(problem,individual,pathname=None,title=None,addtext=None,ylimits
     plt.close()
 
 
+def find_edges(sequence,value):
+    existence=where(sequence==value,1,0)
+    ledges=[]; redges=[]
+    if sequence[0]==value:
+        #print 'hello'
+        ledges.append(0)
+        if sequence[1]!=value:
+            redges.append(0)
+    n=len(sequence)
+    for i in range(1,n-2):
+        if (existence[i-1]==0) and (existence[i]==1):
+            ledges.append(i)
+        if (existence[i]==1) and (existence[i+1]==0):
+            redges.append(i)
+    if sequence[-1]==value:
+        redges.append(n-1)
+        if sequence[-1]!=value:
+            redges.append(n-1)
+    #print ledges,redges
+    return [[le,re] for le,re in zip(ledges,redges)]
+
+def scoredistribplot(rec,ginter=None,path=None,title=None,addtext=None,textbox=None,yscale='linear',ylimits=None,
+                     yoffset=None,whiggle=0,picname=None,suffix=''):
+    p=rec.p
+    myc=['g',cm.gist_rainbow(0.38),cm.bwr(0.4),cm.Blues(0.5),cm.Blues(0.9),'y',cm.cool(0.6)]
+    st=array(rec.status)
+    for i in range(7):
+        edges=find_edges(st,i+1)
+        for le,re in edges:
+            plt.axvspan(rec.gg[le]-0.5,rec.gg[re]+0.5,color=myc[i],alpha=0.5)
+    if yoffset is None: yoffset=0.
+    plt.plot(rec.gg,asfarray(rec.score100)+yoffset,'-',color=cm.afmhot(0.6),lw=2)
+    plt.plot(rec.gg,asfarray(rec.score075)+yoffset,'-',color=cm.afmhot(0.4),lw=2)
+    plt.plot(rec.gg,asfarray(rec.score050)+yoffset,'-',color=cm.afmhot(0.2),lw=2)
+    plt.fill_between(rec.gg,asfarray(rec.score000)+yoffset,asfarray(rec.score025)+yoffset,color='k',alpha='0.7')
+    plt.plot(rec.gg,asfarray(rec.score025)+yoffset,'k-',lw=2)
+    plt.plot(rec.gg,asfarray(rec.score000)+yoffset,'k-',lw=2)
+    if yscale=='log':
+        plt.semilogy()
+    if ylimits is not None:
+        plt.ylim(ylimits)
+    else:
+        if p.whatisfit=='minimize':
+            minyval=np.min(array(rec.score000)+yoffset); maxyval=np.max(array(rec.score100)+yoffset)
+        else:
+            minyval=np.min(array(rec.score100)+yoffset); maxyval=np.max(array(rec.score000)+yoffset)
+        if yscale=='log':
+            lopower=floor(log10(minyval)); minyval=10**lopower
+            hipower=ceil(log10(maxyval)); maxyval=10**hipower
+        plt.ylim(minyval,maxyval)
+    if ginter is not None:
+        gini,gend=ginter; plt.xlim(gini,gend)
+    else:
+        plt.xlim(-1,rec.gg[-1]+1)
+    if title is None:
+        title='case {1} subcase {2} generation {3}\nSOO with objective {0}'.format(p.objname,p.ncase,p.subcase,p.gg)
+        title+=r'  $\rightarrow$  final score = {}'.format(p[0].score)
+    plt.title(title, fontsize=10)
+    plt.xlabel('generations'); 
+    if yoffset is None:
+        plt.ylabel('score')
+    else:
+        plt.ylabel('score with offset '+str(yoffset))
+    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    if addtext is not None:
+        plt.suptitle(addtext,x=0.02,y=0.04,horizontalalignment='left',verticalalignment='bottom',fontsize=6)
+    if textbox is not None:
+        boxtext,fsize=textbox
+        #tbx=plt.suptitle(boxtext,x=0.93,y=0.93,ha='right',va='top',fontsize=fsize)
+        tbx=plt.text(0.6,0.93,boxtext,transform=plt.axes().transAxes,ha='left',va='top',fontsize=fsize)
+        tbx.set_bbox(dict(facecolor='gray', alpha=0.25))
+    if path is None: path=rec.p.plotpath
+    if picname is None:
+        if ginter is None: picname='scoredistrib_'+p.label
+        else: picname='scoredistrib_c'+str(p.ncase).zfill(3)+'_sc'+str(p.subcase).zfill(3)+'_g'+str(gini)+'to'+str(gend)
+    plt.savefig(join(path,picname+'_'+suffix+'.png'))
+    plt.close()
 
 
-
+# debugging shit to be erased
+#def scoredistribplot2(rec,ginter=None,path=None,title=None,addtext=None,textbox=None,yscale='linear',ylimits=None,
+#                     yoffset=None,whiggle=0,picname=None,suffix=''):
+#    p=rec.p
+#    myc=['g',cm.gist_rainbow(0.38),cm.bwr(0.4),cm.Blues(0.5),cm.Blues(0.9),'y',cm.cool(0.6)]
+#    st=array(rec.status)
+#    for i in range(7):
+#        edges=find_edges(st,i+1)
+#        for le,re in edges:
+#            plt.axvspan(rec.gg[le]-0.5,rec.gg[re]+0.5,color=myc[i],alpha=0.5)
+#    if yoffset is None: yoffset=0.
+#    #yoffset=0.
+#    plt.plot(rec.gg,asfarray(rec.score100)+yoffset,'-',color=cm.afmhot(0.6),lw=2)
+#    plt.plot(rec.gg,asfarray(rec.score075)+yoffset,'-',color=cm.afmhot(0.4),lw=2)
+#    plt.plot(rec.gg,asfarray(rec.score050)+yoffset,'-',color=cm.afmhot(0.2),lw=2)
+#    plt.fill_between(rec.gg,asfarray(rec.score000)+yoffset,asfarray(rec.score025)+yoffset,color='k',alpha='0.7')
+#    plt.plot(rec.gg,asfarray(rec.score025)+yoffset,'k-',lw=2)
+#    plt.plot(rec.gg,asfarray(rec.score000)+yoffset,'k-',lw=2)
+#    if yscale=='log':
+#        plt.semilogy()
+#    if ylimits is not None:
+#        plt.ylim(ylimits)
+#    else:
+#        if p.whatisfit=='minimize':
+#            minyval=np.min(rec.score000); maxyval=np.max(rec.score100)
+#        else:
+#            minyval=np.min(rec.score100); maxyval=np.max(rec.score000)
+#        print 'plot y interval: ',minyval,maxyval
+#        plt.ylim(minyval,maxyval)
+#    if ginter is not None:
+#        gini,gend=ginter; plt.xlim(gini,gend)
+#    else:
+#        plt.xlim(-1,rec.gg[-1]+1)
+#    if title is None:
+#        title='case {1} subcase {2} generation {3}\nSOO with objective {0}'.format(p.objname,p.ncase,p.subcase,p.gg)
+#        title+=r'  $\rightarrow$  final score = {}'.format(p[0].score)
+#    plt.title(title, fontsize=10)
+#    plt.xlabel('generations'); 
+#    if yoffset is None:
+#        plt.ylabel('score')
+#    else:
+#        plt.ylabel('score with offset '+str(yoffset))
+#    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+#    if addtext is not None:
+#        plt.suptitle(addtext,x=0.02,y=0.04,horizontalalignment='left',verticalalignment='bottom',fontsize=6)
+#    if textbox is not None:
+#        boxtext,fsize=textbox
+#        #tbx=plt.suptitle(boxtext,x=0.93,y=0.93,ha='right',va='top',fontsize=fsize)
+#        tbx=plt.text(0.6,0.93,boxtext,transform=plt.axes().transAxes,ha='left',va='top',fontsize=fsize)
+#        tbx.set_bbox(dict(facecolor='gray', alpha=0.25))
+#    if path is None: path=rec.p.plotpath
+#    if picname is None:
+#        if ginter is None: picname='scoredistrib_'+p.label
+#        else: picname='scoredistrib_c'+str(p.ncase).zfill(3)+'_sc'+str(p.subcase).zfill(3)+'_g'+str(gini)+'to'+str(gend)
+#    plt.savefig(join(path,picname+'_'+suffix+'.png'))
+#    #plt.savefig(join(rec.p.plotpath,'sd_testplot.png'))
+#    plt.close()

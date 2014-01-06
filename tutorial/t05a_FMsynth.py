@@ -7,7 +7,8 @@ a) three ways of defining the objective function:
      B: a simple class definition for the objective function
      C: making more use of object-orientation (next one)
 
-test function: CEC-2011 test function 1 --> Parameter Estimation for Frequency-Modulated (FM) Sound Waves
+test function: CEC-2011 test function 1
+--> Parameter Estimation for Frequency-Modulated (FM) Sound Waves
 
 what is to be shown here:
 
@@ -104,7 +105,7 @@ pB.print_stuff(slim=True)
 The really good thing about this FM synthesis test problem is that it is a
 difficult six-dimensional test problem, but it is easy to plot a solution
 candidate and judge at the first glance whether a solution is good or not. I
-think how essential the combination of these two properties is, cannot be
+think, how essential the combination of these two properties is, cannot be
 stressed enough.
 
 When inventing or working with evolutionary algorithms, you
@@ -119,7 +120,7 @@ Of course for algorithm fine-tuning you won't be able to avoid huge statistics,
 but for first order tinkering, looking at how the best solution develops during
 two or three EA runs suffices. Having such a difficult and telling test problem
 where you can make a plot and where a human brain can judge on the solution
-quality in a couple of miliseconds speeds you up a lot in your trial-and-error
+quality in a couple of milliseconds speeds you up a lot in your trial-and-error
 iteration cycle while coding.
 """
 

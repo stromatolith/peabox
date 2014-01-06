@@ -8,6 +8,9 @@ test function: CEC-2005 test function 11 --> Weierstrass function in 10 dimensio
 
 what is to be shown here:
 
+This is about statistics and visualisation with the goal of finding out what
+goes on in the algorithm.
+
 Okay, our algorithm concoction somehow improves the population, but not
 spectacularly. In order to find out whether the whole SAGA idea was lame to 
 begin with or whether there is some potential to tune better performance into
@@ -77,7 +80,6 @@ ps=80    # population size
 G=120     # number of generations to go through
 parents=SAGA_Population(Individual,ps,f11,searchspace); parents.objname='CEC05 f11'
 offspring=SAGA_Population(Individual,ps,f11,searchspace); offspring.objname='CEC05 f11'
-parents.set_goalvalue(97.) # note down whether/when this goal was reached
 
 parents.ncase=1   # let this be case 1, plots and pickles will contain the number
 offspring.ncase=1
@@ -89,6 +91,7 @@ rec.snames.append('ga_improverate')
 rec.snames.append('sa_bestcontributions')
 rec.snames.append('ga_bestcontributions')
 rec.reinitialize_data_dictionaries()
+rec.set_goalvalue(97.) # note down whether/when this goal was reached
 
 #-------------------------------------------------------------------------------
 #--- part 2: initialisation ----------------------------------------------------
@@ -172,15 +175,12 @@ for g in range(G):
         pdude.copy_DNA_of(odude,copyscore=True,copyparents=True,copyancestcode=True)
     parents.advance_generation()
     #parents.sort() # not necessary in case offspring has already been sorted
-    parents.check_and_note_goal_fulfillment()
 
     # step D: recording generation characteristics for plot
     parents.sa_improverate=sa_improved/float(sa_events)
     parents.sa_toleraterate=sa_tolerated/float(sa_events)
     parents.ga_improverate=ga_improved/float(ps-sa_events-elite_size)
     rec.save_status()
-
-rec.save_goalstatus()
 
 #-------------------------------------------------------------------------------
 #--- part 4: plotting ----------------------------------------------------------

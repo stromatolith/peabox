@@ -141,14 +141,8 @@ for dude in pD:
 
 
 """
-A next step to make the FMsynth class more comfortable to use if we wanted to
-further work with it, could be to envisage a constructor call like this:
-    def __init__(self, pspace, amplitudes=[1., 1.5, 2.], frequencies=[5. ,4.8, 4.9], nt=101):
-
-... but then the constructor of the population class would have to be adjusted
-(by subclassing) as well, that would be some exercise... and another one would
-be inplementing the option of more than 6 problem dimensions ... probably one
-might also be able to convince oneself that the problem complexity grows very
-nonlinearily with problem dimension
+An interesting next step  would be inplementing the option of more than 6
+problem dimensions ... probably one might also be able to convince oneself that
+the problem complexity grows very nonlinearily with problem dimension
 """
 

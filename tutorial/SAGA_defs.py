@@ -19,6 +19,7 @@ from os.path import join
 import matplotlib.pyplot as plt
 
 from peabox_population import Population
+from peabox_recorder import Recorder
 from peabox_helpers import parentselect_exp
 
 
@@ -56,7 +57,7 @@ class SAGA:
     a concoction of simulated annealing plugged into a GA framework
     """
 
-    def __init__(self,F0pop,F1pop,recorder=None):
+    def __init__(self,F0pop,F1pop,userec=False):
         self.F0=F0pop  # parent population, nomenclature like in your biology book
         self.F1=F1pop  # offspring population, nomenclature like in your biology book
         self.sa_T=1. # temperature
@@ -67,18 +68,16 @@ class SAGA:
         self.AE=0.08 # annealing exponent --> exp(-AE) is multiplier for reducing temperature
         self.elite_size=2
         self.reduce_mstep=False
-        self.iv_pickling=0     # interval for pickling population
-        self.iv_popstatus=0    # interval for writing population status file
-        self.iv_recorder=0     # interval for recorder saving data
-        if recorder is not None:
-            self.rec=recorder
-            self.iv_recorder=1
+        if userec:
+            self.rec=Recorder(F0pop)
             self.rec.snames.append('sa_improverate') # appending a scalar property's name to the survey list
             self.rec.snames.append('sa_toleraterate')
             self.rec.snames.append('ga_improverate')
             self.rec.reinitialize_data_dictionaries()
-        self.generation_callback=None  # any function recieving this EA instance as argument, e.g. plot current best solution
-        self.gcallback_interval=10     # execute the generation_callback after every 10th generation
+            self.userec=True
+        else:
+            self.rec=None
+            self.userec=False
     
     def initialize_temperature(self):
         # assumption: parent population already evaluated and sorted
@@ -122,8 +121,6 @@ class SAGA:
         # a) we evaluated dudes of F1 and we act up as if it happened with F0, but it is even messier
         # b) so far Population.neval is automatically updated only when using a Population method like
         # Population.eval_all() or eval_bunch(), but here we directly had to use the Individual's method evaluate()
-        # Does anybody happen to know how the usage of dude.evaluate() could automatically be told to the
-        # population it belongs to?
             
     def advance_generation(self):
         for pdude,odude in zip(self.F0,self.F1):
@@ -136,59 +133,22 @@ class SAGA:
         self.F0.mark_oldno()
         self.F0.sort()
         self.F0.update_no()
-        self.F0.check_and_note_goal_fulfillment()
-        if self.generation_callback is not None and not mod(self.F0.gg,self.gcallback_interval):
-            self.generation_callback(self)
-        #print 'in generation {0} weight fraction x = {1}'.format(self.F0.gg,self.F0.sumcoeffs[0])
-
+        if self.userec: self.rec.save_status()
+            
     def run(self,generations):
         for i in range(generations):
             self.do_step()
-            self.eventually_save_stuff()
             self.sa_T*=exp(-self.AE)
             if self.reduce_mstep:
                 self.sa_mstep*=exp(-self.AE)
     
-    def finish(self):
-        if hasattr(self,'rec'):
-            self.rec.save_goalstatus()
-            
     def simple_run(self,generations,Tstart=None):
         self.F0.new_random_genes()
         self.F0.zeroth_generation()
         if Tstart is not None: self.sa_T=Tstart
         else: self.initialize_temperature()
-        if self.generation_callback is not None and not mod(self.F0.gg,self.gcallback_interval):
-            self.generation_callback(self)
-        self.eventually_save_stuff()
+        if self.userec: self.rec.save_status()
         self.run(generations)
-        self.finish()
-
-    def eventually_save_stuff(self,historical_moment=False):
-        if historical_moment:
-            if hasattr(self,'rec'):
-                if self.iv_recorder!=0:
-                    self.rec.save_status()
-            if self.iv_popstatus!=0:
-                self.F0.pickle_self()
-                self.F0.write_popstatus()
-            if self.iv_pickling!=0:
-                self.pickle_self()
-        else:
-            if hasattr(self,'rec'):
-                if self.iv_recorder!=0 and not mod(self.F0.gg,self.iv_recorder):
-                    self.rec.save_status()
-            if self.iv_popstatus!=0 and not mod(self.F0.gg,self.iv_popstatus):
-                self.F0.pickle_self()
-                self.F0.write_popstatus()
-            if self.iv_pickling!=0 and not mod(self.F0.gg,self.iv_pickling):
-                self.pickle_self()
-
-    def pickle_self(self):
-        ofile=open(self.F0.picklepath+'/EA_'+self.F0.label+'.txt', 'w')
-        einmachglas=Pickler(ofile)
-        einmachglas.dump(self)
-        ofile.close()
 
 
 

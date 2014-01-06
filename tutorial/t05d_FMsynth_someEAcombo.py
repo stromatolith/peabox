@@ -75,11 +75,6 @@ class FMsynthC(Individual):
     def set_bad_score(self):
         self.score=9999.
 
-def gcb(eaobj):
-    b=eaobj.F0[0]
-    b.plot_FMsynth_solution()
-    print 'gcb: score: {}   DNA: {}'.format(b.score,b.DNA)
-
 # search space boundaries:
 searchspace=(('amp 1',   -6.4, +6.35),
              ('omega 1', -6.4, +6.35),
@@ -95,9 +90,16 @@ ps=80
 parents=Population(FMsynthC,ps,dummyfunc,searchspace)
 offspring=Population(FMsynthC,ps,dummyfunc,searchspace)
 rec=Recorder(parents)
-ea=ComboB(parents,offspring,rec)       # instanciate the algorithm from library
-ea.generation_callback=gcb
-ea.gcallback_interval=10
+ea=ComboB(parents,offspring)       # instanciate the algorithm from library
+
+def gcb(eaobj):
+    if eaobj.F0.gg%10 == 0: # every 10th generation
+        b=eaobj.F0[0]
+        b.plot_FMsynth_solution()
+        print 'gcb: generation: {} score: {}   DNA: {}'.format(eaobj.F0.gg,b.score,b.DNA)
+    rec.save_status()
+
+ea.generation_callbacks.append(gcb)
 
 # set algorithm parameters (meaning of unexplained parameters should be inferred from source code)
 ea.set_bunchsizes([8,12,10,10,20,20])

@@ -21,12 +21,34 @@ import numpy.random as npr
 from scipy.optimize import brent
 from scipy.stats import pearsonr
 
+import ctypes as ct
+
 #-----------------------------------------------------------------------------------------------------------------------------
-from peabox_individual import Individual  #, MOIndividual
+from peabox_individual import Individual, cecIndivid
+from peabox_helpers import simple_searchspace
 #-----------------------------------------------------------------------------------------------------------------------------
 
 def population_like(otherpop,size=0):
-    if isinstance(otherpop,wTOPopulation):
+    if isinstance(otherpop,cecPop):
+        p=cecPop(size,otherpop.func_num,otherpop.ng,evaluatable=False)
+        p.gg=otherpop.gg
+        p.ncase=otherpop.ncase
+        p.subcase=otherpop.subcase
+        p.determine_whatisfit(otherpop.whatisfit)
+        p.path=otherpop.path
+        p.picklepath=otherpop.picklepath
+        p.plotpath=otherpop.plotpath
+        p.ownname=otherpop.ownname
+        p.moreprops=copy(otherpop.moreprops)
+        p.flabel=otherpop.flabel
+        p.scoreformula=otherpop.scoreformula
+        p.update_label()    
+        for dude in p:
+            dude.gg=otherpop.gg
+            dude.ncase=otherpop.ncase
+            dude.subcase=otherpop.subcase
+        return p
+    elif isinstance(otherpop,wTOPopulation):
         objectives=[[name,func] for name,func in zip(otherpop.objnames,otherpop.objfuncs)]
         p=wTOPopulation(otherpop.species,size,objectives,otherpop.pars)
         p.ncase=otherpop.ncase
@@ -34,13 +56,13 @@ def population_like(otherpop,size=0):
         p.subcase=otherpop.subcase
         p.nthreads=otherpop.nthreads
         p.determine_whatisfit(otherpop.whatisfit,otherpop.objdirecs)
-        p.goal=copy(otherpop.goal)
         p.rankweights=copy(otherpop.rankweights)
         p.sumcoeffs=copy(otherpop.sumcoeffs)
         p.offset=otherpop.offset
         p.path=otherpop.path
         p.picklepath=otherpop.picklepath
         p.plotpath=otherpop.plotpath
+        p.ownname=otherpop.ownname
         p.moreprops=copy(otherpop.moreprops)
         p.scoreformula=otherpop.scoreformula
         p.sortstrategy=otherpop.sortstrategy
@@ -57,6 +79,9 @@ def population_like(otherpop,size=0):
             dude.sumcoeffs[:]=otherpop.sumcoeffs
             dude.offset=otherpop.offset
             dude.rankweights[:]=otherpop.rankweights
+            dude.gg=otherpop.gg
+            dude.ncase=otherpop.ncase
+            dude.subcase=otherpop.subcase
         return p
     elif isinstance(otherpop,MOPopulation):
         objectives=[[name,func] for name,func in zip(otherpop.objnames,otherpop.objfuncs)]
@@ -66,13 +91,13 @@ def population_like(otherpop,size=0):
         p.subcase=otherpop.subcase
         p.nthreads=otherpop.nthreads
         p.determine_whatisfit(otherpop.whatisfit,otherpop.objdirecs)
-        p.goal=copy(otherpop.goal)
         p.rankweights=copy(otherpop.rankweights)
         p.sumcoeffs=copy(otherpop.sumcoeffs)
         p.offset=otherpop.offset
         p.path=otherpop.path
         p.picklepath=otherpop.picklepath
         p.plotpath=otherpop.plotpath
+        p.ownname=otherpop.ownname
         p.moreprops=copy(otherpop.moreprops)
         p.scoreformula=otherpop.scoreformula
         p.update_label()
@@ -80,6 +105,9 @@ def population_like(otherpop,size=0):
             dude.sumcoeffs[:]=otherpop.sumcoeffs
             dude.offset=otherpop.offset
             dude.rankweights[:]=otherpop.rankweights
+            dude.gg=otherpop.gg
+            dude.ncase=otherpop.ncase
+            dude.subcase=otherpop.subcase
         return p
     else:
         p=Population(otherpop.species,size,otherpop.objfunc,otherpop.pars)
@@ -89,13 +117,17 @@ def population_like(otherpop,size=0):
         p.subcase=otherpop.subcase
         p.nthreads=otherpop.nthreads
         p.determine_whatisfit(otherpop.whatisfit)
-        p.goal=copy(otherpop.goal)
         p.path=otherpop.path
         p.picklepath=otherpop.picklepath
         p.plotpath=otherpop.plotpath
+        p.ownname=otherpop.ownname
         p.moreprops=copy(otherpop.moreprops)
         p.scoreformula=otherpop.scoreformula
         p.update_label()
+        for dude in p:
+            dude.gg=otherpop.gg
+            dude.ncase=otherpop.ncase
+            dude.subcase=otherpop.subcase
         return p
     
     
@@ -123,12 +155,12 @@ class Population:
             newdude=self.species(objfunc,paramspace)
             newdude.no=i; newdude.oldno=i; newdude.ncase=self.ncase
             self.folks.append(newdude)
-        self.goal={'goalvalue':0,'fulfilltime':-1, 'fulfillcalls':-1}   # you can define a convergence criterium goalvalue and note down the generation when there was the first Individual getting the corresponding score
         self.neval=0                    # counter for score evaluations
         self.path=getcwd()
         self.datapath=join(self.path,'out')
         self.plotpath=join(self.path,'plots')
         self.picklepath=join(self.path,'pickles')
+        self.ownname='pop'
         self.scoreformula='scoreformula not yet defined'
         self.update_label()
         self.moreprops={}
@@ -368,6 +400,14 @@ class Population:
         else:
             for dude in self:
                 dude.set_DNA(params)
+    
+    def set_all_scores(self,value):
+        for dude in self:
+            dude.score=value
+    
+    def set_all_scores_bad(self):
+        for dude in self:
+            dude.set_bad_score()
 
     def copy_otherpop(self,otherpop,copyscore=False,copyancestcode=False,copyparents=False):
         assert len(otherpop)==self.psize
@@ -375,9 +415,12 @@ class Population:
         for dude,otherdude in zip(self,otherpop):
             dude.copy_DNA_of(otherdude,copyscore=copyscore,copyancestcode=copyancestcode,copyparents=copyparents)
 
-    def reset_individual_attributes(self):
+    def reset_individual_attributes(self,score=None):
         for i,dude in enumerate(self):
-            dude.oldno=i; dude.ancestcode=1.; dude.pa=-1; dude.pb=-1; dude.score=0.; dude.gg=self.gg
+            dude.oldno=i; dude.ancestcode=1.; dude.pa=-1; dude.pb=-1; dude.set_bad_score(); dude.gg=self.gg
+        if score is not None:
+            for dude in self:
+                dude.score=score
             
     def reset_all_mutagenes(self,value=1.):
         for dude in self:
@@ -403,6 +446,12 @@ class Population:
         
     def advance_generation(self):
         self.gg+=1;
+        for dude in self:
+            dude.gg=self.gg
+        self.update_label()
+        
+    def set_generation(self,g):
+        self.gg=g;
         for dude in self:
             dude.gg=self.gg
         self.update_label()
@@ -443,32 +492,17 @@ class Population:
             mDNA/=len(self[i_key:f_key])
             return mDNA
         
-    def set_goalvalue(self,value,reset=True):
-        self.goal['goalvalue']=value
-        if reset:
-            self.goal['fulfilltime']=-1; self.goal['fulfillcalls']=-1
-        
-    def check_and_note_goal_fulfillment(self):
-        sc=self.get_scores()
-        factor=1.
-        if self.whatisfit=='maximize': factor=-1.
-        if self.goal['fulfilltime']==-1 and np.min(factor*sc) <= factor*self.goal['goalvalue']:
-            self.goal['fulfilltime']=self.gg-1
-            self.goal['fulfillcalls']=self.neval
-
     def reset(self):
         self.gg=0
         self.reset_individual_attributes()
         self.update_label()
         self.neval=0
-        self.goal['fulfilltime']=-1; self.goal['fulfillcalls']=-1
             
     def zeroth_generation(self):
         self.mark_oldno()
         self.eval_all()
         self.sort()
         self.update_no()
-        self.check_and_note_goal_fulfillment()
         
     def print_stuff(self,slim=False):
         print '-----------------------------------------------------------------------------------------------------------'
@@ -484,13 +518,13 @@ class Population:
         print '-----------------------------------------------------------------------------------------------------------'
         
     def pickle_self(self):
-        ofile=open(self.picklepath+'/pop_'+self.label+'.txt', 'w')
+        ofile=open(join(self.picklepath,self.ownname+'_'+self.label+'.txt'), 'w')
         einmachglas=Pickler(ofile)
         einmachglas.dump(self)
         ofile.close()
         
     def write_popstatus(self):
-        ofile=open(self.datapath+'/evostatus_'+self.label+'.txt', 'w')
+        ofile=open(join(self.datapath,self.ownname+'_status_'+self.label+'.txt'), 'w')
         ofile.write('current no. | old no. | parent a | parent b | ancestcode |                DNA:   ')
         for parstr in self.pars:
             ofile.write(parstr[0]+'    ')
@@ -502,7 +536,7 @@ class Population:
             ofile.write(str(dude.score)+'\r\n')
         ofile.write('\r\n\r\n\r\n')
         ofile.write('psize: '+str(self.psize)+'\r\n')
-        ofile.write('goal: '+str(self.goal)+'\r\ngg: '+str(self.gg)+'\r\nwhatisfit: '+str(self.whatisfit)+'\r\n')
+        ofile.write('whatisfit: '+str(self.whatisfit)+'\r\n')
         ofile.close()
         return
     
@@ -528,7 +562,7 @@ class Population:
 
 
 #-----------------------------------------------------------------------------------------------------------------------------
-#           for a first concept of multi-objective optimisation: class "MOPopulation" for use with "MOIndividual"
+#--- for a first concept of multi-objective optimisation: class "MOPopulation" for use with "MOIndividual"
 #-----------------------------------------------------------------------------------------------------------------------------
 
 class MOPopulation(Population):
@@ -559,8 +593,6 @@ class MOPopulation(Population):
             newdude.no=i; newdude.oldno=i; newdude.ncase=self.ncase
             self.folks.append(newdude)
         self.paretofront=[]
-        self.goal={'goalvalue':0, 'fulfilltime':-1, 'fulfillcalls':-1,
-                   'objgoalvalues':np.zeros(self.nobj), 'objfulfilltimes':-np.ones(self.nobj), 'objfulfillcalls':-np.ones(self.nobj)}
         self.rankweights=np.ones(self.nobj,dtype=float)/self.nobj# the coefficients when summing over the different ranks in order to calculate self.overall_rank
         self.sumcoeffs=np.ones(self.nobj,dtype=float)/self.nobj # coefficients in case overall score can be calculated as a weighted sum
         self.offset=0.                             # additional constant offset in case score can be calculated as a weighted sum
@@ -568,6 +600,7 @@ class MOPopulation(Population):
         self.path=getcwd()
         self.plotpath=join(self.path,'plots')
         self.picklepath=join(self.path,'pickles')
+        self.ownname='pop'
         self.scoreformula='scoreformula not yet defined'
         self.update_label()
         self.moreprops={}
@@ -729,12 +762,6 @@ class MOPopulation(Population):
             dude.objdirecs=copy(objdirecs)
             dude.minmaxflip[:]=self.minmaxflip
         
-    def set_objgoalvalues(self,values):
-        self.goal['objgoalvalues'][:]=values
-        
-#    def set_ordergoalvalue(self,value):
-#        self.ordergoal['goalvalue']=value
-        
     def set_sumcoeffs(self,values):
         self.sumcoeffs[:]=values
         for dude in self: dude.sumcoeffs[:]=values
@@ -746,28 +773,13 @@ class MOPopulation(Population):
     def set_rankweights(self,values):
         self.rankweights[:]=values
         for dude in self: dude.rankweights[:]=values
-        
-    def check_and_note_goal_fulfillment(self):
-        ov=self.get_objvals()
-        os=self.get_scores()
-        for i,factor in enumerate(self.minmaxflip):
-            if self.goal['objfulfilltimes'][i]==-1 and np.min(factor*ov[:,i]) <= factor*self.goal['objgoalvalues'][i]:
-                self.goal['objfulfilltimes'][i]=self.gg-1
-                self.goal['objfulfillcalls'][i]=self.neval
-        if self.whatisfit=='minimize': factor=1.
-        else: factor=-1.
-        if self.goal['fulfilltime']==-1 and np.min(factor*os) <= factor*self.goal['goalvalue']:
-            self.goal['fulfilltime']=self.gg-1
-            self.goal['fulfillcalls']=self.neval
             
     def reset(self):
         self.gg=0
         self.neval=0
-        self.goal['objfulfilltimes'][:]=-1; self.goal['objfulfillcalls'][:]=-1
-        self.goal['fulfilltime']=-1; self.goal['fulfillcalls']=-1
             
     def write_popstatus(self):
-        ofile=open(self.picklepath+'/evostatus_'+self.label+'.txt', 'w')
+        ofile=open(join(self.datapath,self.ownname+'_status_'+self.label+'.txt'), 'w')
         ofile.write('current no. | old no. | parent a | parent b | ancestcode |                DNA:   ')
         for parstr in self.pars:
             ofile.write(parstr[0]+'    ')
@@ -784,7 +796,6 @@ class MOPopulation(Population):
         ofile.write('gg: '+str(self.gg)+'\r\n')
         ofile.write('objdirecs: '+str(self.objdirecs)+'\r\n')
         ofile.write('whatisfit: '+str(self.whatisfit)+'\r\n')
-        ofile.write('goal: '+str(self.goal)+'\r\n')
         ofile.close()
         return
     
@@ -810,8 +821,8 @@ class MOPopulation(Population):
 
 
 #-----------------------------------------------------------------------------------------------------------------------------
-#           for the special case of two objectives: the weighted two-objective population
-#           experimenting with ranking for dynamically weighted objective values or weighted rankings
+#--- for the special case of two objectives: the weighted two-objective population
+#    experimenting with ranking for dynamically weighted objective values or weighted rankings
 #-----------------------------------------------------------------------------------------------------------------------------
 
 class wTOPopulation(MOPopulation):
@@ -964,6 +975,184 @@ class wTOPopulation(MOPopulation):
         else: return abs(r1-r2)*max(abs(r1),abs(r2))  
 
 
+
+#-----------------------------------------------------------------------------------------------------------------------------
+#--- to use the CEC-2013 test function suite via ctypes, I implemented the following subclass
+#-----------------------------------------------------------------------------------------------------------------------------
+
+fnames={1:'sphere',
+        2:'rot. ellipse',
+        3:'rot. bent cigar',
+        4:'rot. discus',
+        5:'diff. powers',
+        6:'rot. Rosenbrock',
+        7:'rot. Schaffer F7',
+        8:'rot. Ackley',
+        9:'rot. Weierstrass',
+        10:'rot. Griewank',
+        11:'Rastrigin',
+        12:'rot. Rastrigin',
+        13:'noncont. rot. Rastrigin',
+        14:'Schwefel',
+        15:'rot. Schwefel',
+        16:'rot. Katsuura',
+        17:'Lunacek bi-R.',
+        18:'rot. Lunacek bi-R.',
+        19:'exp. Grie+Ros',
+        20:'exp. Schaffer F6',
+        21:'comp. function 1',
+        22:'comp. function 2',
+        23:'comp. function 3',
+        24:'comp. function 4',
+        25:'comp. function 5',
+        26:'comp. function 6',
+        27:'comp. function 7',
+        28:'comp. function 8',}
+        
+class cecPop(Population):
+    
+    def __init__(self,popsize,func_num,ndim,evaluatable=False):
+        self.func_num=func_num
+        self.pars=simple_searchspace(ndim,-100.,100.)
+        #self.parnames=tuple(['p'+str[i].zfill(2) for i in range(ndim)])
+        plist=['p'+str(i).zfill(2)+',' for i in range(ndim)]
+        self.parnames=tuple(plist)
+        self.species=cecIndivid
+        self.objfunc=None
+        self.objname='cec testfunc '+str(func_num).zfill(2)
+        self.psize=int(popsize)   # population size
+        self.ng=ndim       # number of parameters, i.e. number of genes for each member of population
+        self.gg=0            # generation counter
+        self.ncase=0         # case or study number, which will used for labelling all output; helps you keep track of what you did
+        self.subcase=0       # if you do not want to waste case numbers when looping over many evolution runs for statistics
+        self.nthreads=1      # if 0 use self.get_scores() else use self.get_scores_threaded(self.nthreads) ... threaded so far just possible for ansys batch jobs
+        self.leastthreads=1  # lowest desired number of threads when using multithreading
+        self.folks=[]
+        self.whatisfit='minimize'
+        for i in range(self.psize):
+            newdude=self.species(ndim)
+            newdude.no=i; newdude.oldno=i; newdude.ncase=self.ncase
+            self.folks.append(newdude)
+        self.neval=0                    # counter for score evaluations
+        self.path=getcwd()
+        self.datapath=join(self.path,'out')
+        self.plotpath=join(self.path,'plots')
+        self.picklepath=join(self.path,'pickles')
+        self.ownname='pop'
+        self.flabel=fnames[func_num]
+        self.scoreformula=self.flabel
+        self.update_label()
+        self.moreprops={}
+        self.evaluatable=evaluatable
+        if self.evaluatable:
+            self.testfunc_ini()
+        return
+    
+    def testfunc_ini(self):
+        self.tflib = ct.cdll.LoadLibrary(join(self.path,'test_func.so'))
+        self.tf=self.tflib.test_func
+        self.tf.argtypes=[ct.POINTER(ct.c_double),ct.POINTER(ct.c_double),ct.c_int,ct.c_int,ct.c_int]
+        self.tf.restype=None
+        lenxdata=self.psize*self.ng
+        self.x=(ct.c_double * lenxdata)()
+        self.f=(ct.c_double * self.psize)()
+        self.cng=ct.c_int(self.ng)
+        self.cpsize=ct.c_int(self.psize)
+        self.cfuncnum=ct.c_int(self.func_num)
+    
+#    def testfunc_release(self):
+#        del self.tflib
+#        del self.tf
+#        del self.x
+#        del self.f
+#        del self.cng
+#        del self.cpsize
+#        del self.cfuncnum
+    
+    def DNAs_to_x(self):
+        for i in range(self.psize):
+            for j in range(self.ng):
+                #print self.folks[i].DNA[j]
+                #print self.x[1]
+                #print self.x[i*self.ng+j]
+                self.x[i*self.ng+j]=self.folks[i].DNA[j]
+    
+    def f_to_dudes(self):
+        for i,dude in enumerate(self):
+            dude.score=self.f[i]
+
+    def eval_all(self):
+        self.DNAs_to_x()
+        self.tf(self.x,self.f,self.cng,self.cpsize,self.cfuncnum)
+        self.f_to_dudes()
+        self.neval+=self.psize
+            
+    def eval_all_serial(self):
+        raise TypeError('cecpop has only eval_all(), because it uses test_func.so via ctypes')
+
+    def eval_all_threaded(self,low_n=None,desired_n=None):
+        raise TypeError('cecpop has only eval_all(), because it uses test_func.so via ctypes')
+            
+    def eval_bunch(self,i_key,f_key):
+        raise TypeError('cecpop has only eval_all(), because it uses test_func.so via ctypes')
+        
+    def eval_bunch_serial(self,i_key,f_key):
+        raise TypeError('cecpop has only eval_all(), because it uses test_func.so via ctypes')
+        
+    def eval_bunch_threaded(self,i_key,f_key,low_n=None,desired_n=None):
+        raise TypeError('cecpop has only eval_all(), because it uses test_func.so via ctypes')
+            
+    def eval_one_dude(self,key):
+        raise TypeError('cecpop has only eval_all(), because it uses test_func.so via ctypes')
+
+    def change_size(self,newsize,sortbefore=True,updateno=True):
+        # allows you to play with population bottlenecks, or to apply two different EAs to one population in series, i.e. gives a lot of freedom if you want to continue a good population with a modified EA
+        #self.testfunc_release()
+        if sortbefore: self.sort()
+        if updateno: self.update_no()
+        if newsize<self.psize:
+            for i in range(newsize,self.psize):
+                self.pop()
+        elif newsize>self.psize:
+            for i in range(self.psize,newsize):
+                newdude=self.species(self.ng)
+                newdude.no=i; newdude.oldno=i; newdude.random_DNA(); newdude.reset_mutagenes()
+                self.append(newdude)
+        else:
+            return
+        if self.evaluatable:
+            self.testfunc_ini()
+        return
+
+    def __getstate__(self):
+        odict = self.__dict__.copy() # copy the dict since we change it
+        if self.evaluatable:
+            # remove unpicklable ctypes stuff from the dictionary used by the pickler
+            del odict['cfuncnum']
+            del odict['cpsize']
+            del odict['cng']
+            del odict['f']
+            del odict['x']
+            del odict['tf']
+            del odict['tflib']
+        return odict
+
+# waiting until first need to see whether the following definition is really necessary
+#    def __setstate__(self, indict):
+#        self.__dict__.update(indict)   # update attributes
+#        if self.evaluatable:
+#            self.testfunc_ini()
+
+    def pickle_self(self):
+        ofile=open(join(self.picklepath,self.ownname+'_'+self.label+'.txt'), 'w')
+        einmachglas=Pickler(ofile)
+        einmachglas.dump(self)
+        ofile.close()
+
+
+#-----------------------------------------------------------------------------------------------------------------------------
+#--- eval threading utilities
+#-----------------------------------------------------------------------------------------------------------------------------
 
 class single_eval_thread(Thread):
     def __init__(self,dude,schloss):
