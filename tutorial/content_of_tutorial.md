@@ -13,6 +13,9 @@ take the time yet to figure out how to use distutils or other such stuff).
 - evaluate new DNAs
 - test function: n-dim. parabolic potential
 - plot fitness distribution and mutation step size over time
+- lesson 1a: parabolic potential (separable)
+- lesson 1b: even particle distribution (nonseparable but still easy)
+- lesson 1c: particle distribution problem a little harder
 
 ### lesson 2: simple GA
 primary goals:
