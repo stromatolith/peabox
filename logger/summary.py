@@ -18,10 +18,10 @@ loc =getcwd()
 #plotloc=join(loc,'summary_plots')
 plotloc=join(loc,'compare_summaries')
 
-subcases=range(51)
+subcases=range(5)  #range(51)
 eat='eacBdLux'
-datfolders=['d50a','d50b','d50c','d50d']
-dfcontents=[[1,7],[8,14],[15,21],[22,28]]
+datfolders=['folderA','folderB']
+dfcontents=[[19,19],[19,19]]         # [[1,7],[8,14],[15,21],[22,28]]  # I used to run 4 parallel jobs in 4 folders, in the first folder test functions 1 through 7, in the 2nd folder 8 through 14 and so on
 #yldict={}
 #yldict={ 1:  [1e-13,1e5],
 #         4:  [1e2,1e8],

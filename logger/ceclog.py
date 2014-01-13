@@ -2,28 +2,38 @@
 """
 data logger class as utility for
 benchmarking of myEA on the CEC-2013 test function suite
+
+This thing logs the responses of the algorithms tell_best_score() method at
+the moments required for the CEC competition on real-parameter optimisation.
+Those moments are when certain fractions of the maximum allowed evaluation
+calls are used up. The threshold ratios are determined by the list self.thr.
+The global minimas of the test functions are known and only the difference
+between its function value and the best function value seen by the EA so far
+(i.e. the error value) has to be recorded. The minimal value corresponding to
+the applied objective function is determined in the set_logtarget() method and
+stored as self.goalval.
+
+Markus Stokmaier, IKET, KIT, Karlsruhe, January 2014
 """
 from os.path import join  #, basename, dirname
 from cPickle import Pickler  #, Unpickler
 from numpy import ceil  #, array
 #from pylab import plt
-from EAcombos import ComboBase, ComboC_Base, ComboD
-#from nhansens_cmaes import CMAES
 
 class cec_data_logger:
     def __init__(self,eaobj):
         self.ea=eaobj
-        if isinstance(eaobj,ComboD):
-            self.p=eaobj.F0b
-        else:
-            self.p=eaobj.F0
+        self.p=None
         self.thrcount=0
         self.thr=[0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.]
-        if self.p.func_num <= 14:
+        self.goalval=None
+        self.memory={'g':[], 'DNA':[], 'score':[], 'neval':[]}
+    def set_logtarget(self,target):
+        self.p=target
+        if self.p.func_num <= 14:  # automatic determination of level of global minimum
             self.goalval=-1500+self.p.func_num*100.
         else:
             self.goalval=-1400+self.p.func_num*100.
-        self.memory={'g':[], 'DNA':[], 'score':[], 'neval':[]}
     def start(self):
         path=join(self.p.path,'logs')
         self.p.update_label()

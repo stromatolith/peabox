@@ -117,7 +117,6 @@ current features
  - **new:** scatter search (SCS or SS)
  - **new:** EA combination examples, e.g. ES+GA+DE-combination
  - **new:** own folder with visualisable test functions and motivating thoughts
- - **new:** another logger for slimmer pickle files and faster score distribution plots
  - a recorder class for regularly taking notes on population status
  - utilities for plotting population histories based on data from recorder objects
  - a little tutorial
