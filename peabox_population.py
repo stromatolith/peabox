@@ -557,6 +557,17 @@ class Population:
         self.sort()
         return
 
+    def save_DNA_array(self,fname=None):
+        if fname is None:
+            np.savetxt(join(self.datapath,'DNAs_'+self.ownname+'_'+self.label+'.txt'),self.get_DNAs())
+        else:
+            np.savetxt(join(self.datapath,fname),self.get_DNAs())
+        
+    def read_DNA_array(self,fname):
+        DNAs=np.loadtxt(fname)
+        assert np.shape(DNAs) == (self.psize,self.ng)
+        for i,dude in enumerate(self):
+            dude.set_DNA(DNAs[i,:])
 
 
 
