@@ -3,10 +3,10 @@ peabox
 
 an evolutionary algorithm toolbox written in python
 
-Use it if you want to tinker around with evolutionary algorithms and you do not yet know wheter it will take you into the direction of GA, ES, PSO, DE, simulated annealing etc or if you decline that decision at all.
+Use it if you want to tinker around with evolutionary algorithms and you do not yet know wheter it will take you into the direction of GA, ES, PSO, DE, simulated annealing etc or if you decline that decision at all. The library is geared towards being intuitive to use and thus enabling rapid prototyping of evolutionary algorithms.
 
 **newest features:**
-- how to call the CEC-2013 test function suite from within python via ctypes
+- how to call the CEC-2013 test function suite, which is coded in C, from within python via ctypes
 - algorithm codes: simple ES, CMA-ES, simple RCGA, scatter search, some EA combination examples
 
 
@@ -97,7 +97,7 @@ class library for rapid prototyping of evolutionary optimisers
  - learning about EA with the help of test functions with visualisable solution candidates (using Matplotlib)
  - experimenting with useful visualisation of EA run statistics (using Matplotlib)
  
-The goal is a rapid iteration cycle (in thinking and code development) for the experimenting architect of evolutionary algorithms.
+The goal is a rapid iteration cycle (algorithm idea -> code -> testing -> new idea) for the experimenting architect of evolutionary algorithms.
 
 
 current features
