@@ -1,17 +1,33 @@
 peabox
 ======
 
-an evolutionary algorithm toolbox written in python
+**an evolutionary algorithm toolbox written in python**
 
-Use it if you want to tinker around with evolutionary algorithms and you do not yet know wheter it will take you into the direction of GA, ES, PSO, DE, simulated annealing etc or if you decline that decision at all. The library is geared towards being intuitive to use and thus enabling rapid prototyping of evolutionary algorithms.
+Use it if you want to tinker around with evolutionary algorithms and you do not yet know wheter it will take you into the direction of GA, ES, PSO, DE, simulated annealing etc or if you decline that decision at all. The library is geared towards being intuitive to use and thus enabling rapid prototyping of evolutionary algorithms. It is made for you if you share my opinion that trying stuff out quickly is better than only reading up on EAs in sometimes boring and often uncomparable papers.
 
-**newest features:**
+**core features:**
+- class `Individual`: if `dude` is an individual, you can do `dude.mutate()`, `dude.become_mixture_of(parentA,parentB)`, `dude.CO_with(otherdude)` and stuff like that
+- class `Population`: if `p1` is a population, you can do `p1.sort()`, `p1.new_random_genes()`, `p1.get_DNAs()`, `p1.eval_all()`, `p1.eval_all_threaded()`, `p3=p2+p1`, and similar things.
+
+This lets you write down concise code for casting your new evolutionary algorithm idea in python. Some more shorthands or convenience routines still missing in the library? (E.g. wanting binary DNA with a different `dude.mutate()`?) The classes `Individual` and `Population` can be expanded and/or subclassed in an easy and intuitive manner, the feeling of straightforwardness is there already after a highschool biology class, and not only for experienced master programmers.
+
+**some more features of interest:**
+- visualisable test functions: watch how solutions become better and better, this speeds up your trial and error iteration cycle
+- algorithm codes: simple ES, CMA-ES, simple RCGA, scatter search
+- examples of combinations of different oldschool EAs
 - how to call the CEC-2013 test function suite, which is coded in C, from within python via ctypes
-- algorithm codes: simple ES, CMA-ES, simple RCGA, scatter search, some EA combination examples
+- there's a tutorial, just go to the readme in the tutorial folder
 
 
-motivation
-----------
+explanation (for EA newbies)
+----------------------------
+find it in the folder `intro_for_EA_newbies`
+
+
+Below some more words of explanation and motivation will follow addressing readers with a bit of background knowledge of EAs and perhaps some programming experience.
+
+motivation (for EA pros)
+------------------------
 Learning by doing is the only way to familiarise oneself with evolutionary algorithms. Hence, the interest in rapid algorithm prototyping.
 So, wouldn't it be nice to be able to hack away like this?
 ~~~~~~ python
@@ -28,7 +44,7 @@ p1.sort()                    # should be based on the isbetter operator
 
 p2[0].copy_DNA_of(p1[0])     # conserve best
 
-for dude in p2[1:]:
+for dude in p2[1:]:          # now wildly mixing traditional EA approaches
     if in_the_mood_for_CO():
         parentA,parentB=randint(psize,size=2)
         dude.CO_from(p1[parentA],p1[parentB])  # uniform crossing-over
@@ -138,7 +154,7 @@ interesting features still missing
  - PSO
  - SaDE
  - NSGA-II
- - maybe binary DNAs would be interesting for the sake of testing the CHC-GA
+ - maybe binary DNAs would be interesting, e.g. for the sake of testing the CHC-GA
  - BGA mutation operator and other popular GA operators
 
 
