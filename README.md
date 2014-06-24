@@ -13,7 +13,7 @@ This lets you write down concise code for casting your new evolutionary algorith
 
 **some more features of interest:**
 - visualisable test functions: watch how solutions become better and better, this speeds up your trial and error iteration cycle
-- algorithm codes: simple ES, CMA-ES, simple RCGA, scatter search
+- algorithm codes: PSO, simple ES, CMA-ES, simple RCGA, scatter search
 - examples of combinations of different oldschool EAs
 - how to call the CEC-2013 test function suite, which is coded in C, from within python via ctypes
 - there's a tutorial, just go to the readme in the tutorial folder
@@ -133,6 +133,7 @@ current features
  - **new:** scatter search (SCS or SS)
  - **new:** EA combination examples, e.g. ES+GA+DE-combination
  - **new:** own folder with visualisable test functions and motivating thoughts
+ - **new:** particle swarm optimisation (PSO)
  - a recorder class for regularly taking notes on population status
  - utilities for plotting population histories based on data from recorder objects
  - a little tutorial
@@ -151,7 +152,6 @@ interesting features still missing
 ----------------------------------
 **If you enjoy python coding and EAs belong to your interests, I would be happy about you joining the team!**
  - your EA idea
- - PSO
  - SaDE
  - NSGA-II
  - maybe binary DNAs would be interesting, e.g. for the sake of testing the CHC-GA
