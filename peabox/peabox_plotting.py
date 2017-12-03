@@ -184,6 +184,7 @@ def mstepplot(rec,path,title=None,addtext=None,xscale='linear',yscale='linear',y
         mutagenes.append(rec.adat['mutagenes'][i])
     mutagenes=asfarray(mutagenes); n=len(mutagenes[0,:])
     c=make_colorrange(linspace(0,0.2,n),cm.Dark2)
+    fig=plt.figure()
     ax1=plt.axes(); ax2=ax1.twinx()
     for i in range(n):
         ax2.plot(gg,mutagenes[:,i],c=c[i],alpha=0.6,lw=2)
@@ -194,9 +195,12 @@ def mstepplot(rec,path,title=None,addtext=None,xscale='linear',yscale='linear',y
     if title is None:
         title='mutation step size control parameters\ncase {0} generation {1}'.format(p.ncase,gg[-1])
     plt.title(title, fontsize=12)
-    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    date=give_datestring();
+    #plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    plt.text(0.97,0.02,date,transform=fig.transFigure,ha='right',va='bottom',fontsize=8)
     if addtext is not None:
-        plt.suptitle(addtext,x=0.02,y=0.05,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+        #plt.suptitle(addtext,x=0.02,y=0.05,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+        plt.text(0.02,0.05,addtext,transform=fig.transFigure,ha='left',va='bottom',fontsize=8)
     if picname is not None:
         plt.savefig(join(path,picname))
     else:
@@ -229,6 +233,7 @@ def ancestryplot(reclist,ginter=None,path=None,title=None,addtext=None,textbox=N
     if whiggle: x=x+whiggle*rand(len(x))-0.5*whiggle
     if yoffset is not None:
         y+=yoffset
+    fig=plt.figure()
     if ec=='same':
         plt.scatter(x,y,marker='o',c=c,edgecolors=c,cmap=ancestcolors,zorder=True)
     else:
@@ -243,7 +248,8 @@ def ancestryplot(reclist,ginter=None,path=None,title=None,addtext=None,textbox=N
         goal_reached=where(fftimes>=0,1,0); whichrec=list(goal_reached).index(1); rec=reclist[whichrec]
         goaltext='goal (score={0}) met after {1} generations and {2} calls'.format(rec.goal['goalvalue'],rec.goal['fulfilltime'],rec.goal['fulfillcalls'])
         plt.axvline(x=rec.goal['fulfilltime'],color='b')
-    plt.suptitle(goaltext,x=0.022,y=0.015,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+    #plt.suptitle(goaltext,x=0.022,y=0.015,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+    plt.text(0.022,0.015,goaltext,transform=fig.transFigure,ha='left',va='bottom',fontsize=8)
     if yscale=='log':
         plt.semilogy()
     if ylimits is not None:
@@ -268,9 +274,12 @@ def ancestryplot(reclist,ginter=None,path=None,title=None,addtext=None,textbox=N
         plt.ylabel('score')
     else:
         plt.ylabel('score with offset '+str(yoffset))
-    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, ha='right',va='bottom', fontsize=8)
+    date=give_datestring()
+    #plt.suptitle(date,x=0.97,y=0.02, ha='right',va='bottom', fontsize=8)
+    plt.text(0.97,0.02,date,transform=fig.transFigure,ha='right',va='bottom',fontsize=8)
     if addtext is not None:
-        plt.suptitle(addtext,x=0.02,y=0.04,ha='left',va='bottom',fontsize=6)
+        #plt.suptitle(addtext,x=0.02,y=0.04,ha='left',va='bottom',fontsize=6)
+        plt.text(0.02,0.04,addtext,transform=fig.transFigure,ha='left',va='bottom',fontsize=6)
     if textbox is not None:
         boxtext,fsize=textbox
         #tbx=plt.suptitle(boxtext,x=0.93,y=0.93,ha='right',va='top',fontsize=fsize)
@@ -307,7 +316,7 @@ def paretoplots(rec,path,xcrit=0,ycrit=1,colordata='alloscores',
                 xpk.append(rec.allobjvals[i][j,xcrit])
                 ypk.append(rec.allobjvals[i][j,ycrit])
         x=flipud(array(x)); y=flipud(array(y)); c=flipud(array(c)) # so better individuals are in the foreground
-        f=plt.figure(); a=f.add_subplot(111)
+        fig=plt.figure(); a=fig.add_subplot(111)
         if len(xpk): a.scatter(xpk,ypk,marker='s',s=140,edgecolor='g') # the king strictly dominating anybody else
         a.scatter(xpe,ype,marker='+',s=120,edgecolor='g') # the pareto front
         thedots=a.scatter(x,y,marker='o',c=c,cmap=cm.gist_stern,zorder=True) # all dudes
@@ -319,9 +328,12 @@ def paretoplots(rec,path,xcrit=0,ycrit=1,colordata='alloscores',
         if title is not None: a.set_title(title, fontsize=12)
         a.set_xlabel(rec.p.objnames[xcrit]); a.set_ylabel(rec.p.objnames[ycrit])
         cb=plt.colorbar(thedots); cb.set_label(colordata)
-        date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+        date=give_datestring()
+        #plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+        plt.text(0.97,0.02,date,transform=fig.transFigure,ha='right',va='bottom',fontsize=8)
         if addtext is not None:
-            plt.suptitle(addtext,x=0.02,y=0.02,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+            #plt.suptitle(addtext,x=0.02,y=0.02,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+            plt.text(0.02,0.02,addtext,transform=fig.transFigure,ha='left',va='bottom',fontsize=8)
         if picname is not None:
             plt.savefig(join(path,picname))
         else:
@@ -350,7 +362,7 @@ def pparetoplot(popul,path,xcrit=0,ycrit=1,colordata='score',
             xpk.append(dude.objvals[xcrit])
             ypk.append(dude.objvals[ycrit])
     x=flipud(array(x)); y=flipud(array(y)); c=flipud(array(c)) # so better individuals are in the foreground
-    f=plt.figure(); a=f.add_subplot(111)
+    fig=plt.figure(); a=fig.add_subplot(111)
     if len(xpk): a.scatter(xpk,ypk,marker='s',s=140,edgecolor='g') # the king strictly dominating anybody else
     thefront=a.scatter(xpe,ype,marker='+',s=120,edgecolor='g')
     thedots=a.scatter(x,y,marker='o',c=c,cmap=cm.gist_stern,zorder=True)
@@ -361,9 +373,12 @@ def pparetoplot(popul,path,xcrit=0,ycrit=1,colordata='score',
         a.set_title(title, fontsize=12)
     a.set_xlabel(popul.objnames[xcrit]); a.set_ylabel(popul.objnames[ycrit])
     cb=plt.colorbar(thedots); cb.set_label(colordata)
-    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    date=give_datestring()
+    #plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    plt.text(0.97,0.02,date,transform=fig.transFigure,ha='right',va='bottom',fontsize=8)
     if addtext is not None:
-        plt.suptitle(addtext,x=0.02,y=0.02,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+        #plt.suptitle(addtext,x=0.02,y=0.02,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+        plt.text(0.02,0.02,addtext,transform=fig.transFigure,ha='left',va='bottom',fontsize=8)
     if picname is not None:
         plt.savefig(join(path,picname))
     else:
@@ -465,15 +480,19 @@ def fmsynthplot(problem,individual,pathname=None,title=None,addtext=None,ylimits
     """plot one solution to the CEC-2011 problem no. 1, the FM-synthesis wave fitting problem"""
     DNA=individual.get_copy_of_DNA(); #a=[DNA[0],DNA[2],DNA[4]]; w=[DNA[1],DNA[3],DNA[5]]
     problem.call(DNA); t=problem.t; tgt=problem.target; wave=problem.trial
+    fig=plt.figure()
     plt.fill_between(t,tgt,wave)
     plt.plot(t,tgt,lw=2,color='r')
     plt.plot(t,wave,lw=2,color='c')
     if ylimits is not None: plt.ylim(ylimits)
-    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    date=give_datestring()
+    #plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    plt.text(0.97,0.02,date,transform=fig.transFigure,ha='right',va='bottom',fontsize=8)
     if title is not None:
         plt.title(title)
     if addtext is not None:
-        plt.suptitle(addtext,x=0.02,y=0.02,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+        #plt.suptitle(addtext,x=0.02,y=0.02,horizontalalignment='left',verticalalignment='bottom',fontsize=8)
+        plt.text(0.02,0.02,addtext,transform=fig.transFigure,ha='left',va='bottom',fontsize=8)
     if pathname is not None:
         plt.savefig(pathname)
     else:
@@ -507,6 +526,7 @@ def scoredistribplot(rec,ginter=None,path=None,title=None,addtext=None,textbox=N
     p=rec.p
     myc=['g',cm.gist_rainbow(0.38),cm.bwr(0.4),cm.Blues(0.5),cm.Blues(0.9),'y',cm.cool(0.6)]
     st=array(rec.status)
+    fig=plt.figure()
     for i in range(7):
         edges=find_edges(st,i+1)
         for le,re in edges:
@@ -544,9 +564,12 @@ def scoredistribplot(rec,ginter=None,path=None,title=None,addtext=None,textbox=N
         plt.ylabel('score')
     else:
         plt.ylabel('score with offset '+str(yoffset))
-    date=give_datestring(); plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    date=give_datestring()
+    #plt.suptitle(date,x=0.97,y=0.02, horizontalalignment='right',verticalalignment='bottom', fontsize=8)
+    plt.text(0.97,0.02,date,transform=fig.transFigure,ha='right',va='bottom',fontsize=8)
     if addtext is not None:
-        plt.suptitle(addtext,x=0.02,y=0.04,horizontalalignment='left',verticalalignment='bottom',fontsize=6)
+        #plt.suptitle(addtext,x=0.02,y=0.04,horizontalalignment='left',verticalalignment='bottom',fontsize=6)
+        plt.text(0.02,0.04,addtext,transform=fig.transFigure,ha='left',va='bottom',fontsize=6)
     if textbox is not None:
         boxtext,fsize=textbox
         #tbx=plt.suptitle(boxtext,x=0.93,y=0.93,ha='right',va='top',fontsize=fsize)

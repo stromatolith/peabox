@@ -159,7 +159,7 @@ print 'final population:\nbest score = ',parents[0].score
 #---            use small ginter -----------------------------------------------
 #-------------------------------------------------------------------------------
 
-plot_variant=3
+plot_variant=2
 
 rastx=linspace(-5,5,200)
 rasty=[rastrigin([x]) for x in rastx]
@@ -187,8 +187,8 @@ if plot_variant==1:
         ax.set_ylabel('gene number (i.e. DNA vector index)')
         txt='temporal development of best solution DNA'
         txt+='\nsnapshot of generation '+str(g)
-        plt.suptitle(txt,x=0.5,y=0.98,ha='center',va='top')
-        plt.suptitle(txt2,x=0.02,y=0.01,ha='left',va='bottom',fontsize=8)
+        plt.text(0.5,0.98,txt,transform=fig.transFigure,ha='center',va='top',fontsize=12)
+        plt.text(0.02,0.01,txt2,transform=fig.transFigure,ha='left',va='bottom',fontsize=8)
         plt.savefig('RCGA_snapshot_generation_{}.png'.format(str(g).zfill(3)))
         plt.close()
 
@@ -210,8 +210,8 @@ elif plot_variant==2:
     ax.set_ylabel('gene number (i.e. DNA vector index)')
     txt='temporal development of best solution DNA'
     txt+='\nblack is old, yellow is new'
-    plt.suptitle(txt,x=0.5,y=0.98,ha='center',va='top')
-    plt.suptitle(txt2,x=0.02,y=0.01,ha='left',va='bottom',fontsize=8.5)
+    plt.text(0.5,0.98,txt,transform=fig.transFigure,ha='center',va='top',fontsize=12)
+    plt.text(0.02,0.01,txt2,transform=fig.transFigure,ha='left',va='bottom',fontsize=8.5)
     plt.show()  # pump the figure window up to fullscreen to be able to properly read everything
 
 elif plot_variant==3:
@@ -242,8 +242,8 @@ elif plot_variant==3:
     txt='temporal development of best solution DNA (turn to low ginter for this plot)'
     txt+='\neach gene independently is pressured into a low point in a valley'
     txt+='\nGA should let genes jump independently, whereas ES should make pattern move often but incrementally'
-    plt.suptitle(txt,x=0.5,y=0.98,ha='center',va='top')
-    plt.suptitle(txt2,x=0.02,y=0.01,ha='left',va='bottom',fontsize=8.5)
+    plt.text(0.5,0.98,txt,transform=fig.transFigure,ha='center',va='top',fontsize=12)
+    plt.text(0.02,0.01,txt2,transform=fig.transFigure,ha='left',va='bottom',fontsize=8.5)
     plt.show()
 
 

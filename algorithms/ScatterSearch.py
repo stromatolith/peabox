@@ -71,7 +71,7 @@ class ScatterSearch:
         assert ng==dude.ng
         r=rand(2,ng) # two random numbers per gene: 1st for segment choice, 2nd for random number to be projected on segment
         sbounds=zeros((N+1,ng)) # segment boundaries mapped to the interval [0,1]
-        skey=zeros(ng)  # segment key, i.e. in which segment should this DNA entry be cre
+        skey=zeros(ng,dtype=int)  # segment key, i.e. in which segment should this DNA entry be cre
         for i in range(1,N+1):
             sbounds[i,:]=np.sum(p[:i,:],axis=0)
         for j in range(ng):

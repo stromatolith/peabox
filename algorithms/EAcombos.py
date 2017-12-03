@@ -19,8 +19,10 @@ from peabox_helpers import parentselect_exp, condense
 from peabox_helpers import diverse_selection_from as divsel
 from peabox_helpers import less_aggressive_diverse_selection_from as ladivsel
 #from peabox_recorder import Recorder
-from local1Dsearch import NMStepper, GoldenStepper
-
+try:
+    from local1Dsearch import NMStepper, GoldenStepper
+except:
+    pass
 
 
 class ComboBase(object):
