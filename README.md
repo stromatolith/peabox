@@ -30,7 +30,7 @@ motivation (for EA pros)
 ------------------------
 Learning by doing is the only way to familiarise oneself with evolutionary algorithms. Hence, the interest in rapid algorithm prototyping.
 So, wouldn't it be nice to be able to hack away like this?
-~~~~~~ python
+```python
 p1=Population(fitfunc,psize,searchspace)
 p2=Population(fitfunc,2*psize,searchspace)
 
@@ -62,18 +62,18 @@ for dude in p2[1:]:          # now wildly mixing traditional EA approaches
 
 p2.eval_all()
 p2.sort()
-~~~~~
+```
 Often it makes sense to work with test problems of which you can easily visualise a solution candidate (e.g. 2D truss bridge or FM-synthesis wave matching), which will allow you to quickly judge online whether the best solution found in a population improves over time or not. In that case I'd like to have the possibility of subclassing the `Individual` and add a specific `plot_yourself()` function.
-~~~~~~ python
+```python
 bestdude=p2[0]
 bestdude.plot_yourself(path) 
 
 p2.sort_for('otherprop')  # assuming each Individual has a property dude.otherprop
 funnydude=p2[0]
 funnydude.plot_yourself(path2)
-~~~~~
+```
 And some more generally desired behaviour ...
-~~~~~~ python
+```python
 p3=p1+p2                  # we want to be able to merge populations
 p3.sort()
 p4=p3[:10]                # of course then we also want to be able to take a slice of a population
@@ -83,19 +83,19 @@ print p1[0] is p2[0]      # and did it stay the best in p2? no, hold on, p2 is n
 print p1[0] is bestdude   # ... that's how to ask that question
 
 p3.pickle_self(path)      # being able to pickle and unpickle populations definitely makes sense
-~~~~~
+```
 We want to be able to pull out important data in the form of lists or arrays:
-~~~~~~ python
+```python
 finalDNAs=p4.get_DNAs()
 finalscores=p4.get_scores()
 bestDNA=bestdude.get_copy_of_DNA()
 bestDNApointer=bestdude.DNA
-~~~~~
+```
 And after a couple of generations, maybe you want to plot something like this:
-~~~~~~ python
+```python
 p1.plot_score_history_cloud(plotpath)
 p1.plot_best_DNA_development(plotpath)
-~~~~~
+```
 
 
 
